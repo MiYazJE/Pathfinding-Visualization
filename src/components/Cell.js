@@ -3,29 +3,27 @@ import React, { Component } from 'react';
 
 class Cell extends Component {
 
-    getCellBackground = () => {
-        const {visited, isWall, isInitialCell, isFinalCell} = this.props;
-        if (visited)       return 'green';
-        if (isWall)        return 'black';
-        if (isInitialCell) return 'blue';
-        if (isFinalCell)   return 'red';
-        return 'white';
+    getClassName = () => {
+        const { visited, isWall, isInitialCell, isFinalCell, isCamino } = this.props;
+        if (isCamino) return 'camino';
+        if (visited) return 'visited';
+        if (isWall) return 'wall';
+        if (isInitialCell) return 'initialCell';
+        if (isFinalCell) return 'finalCell';
+        return '';
     }
-    
+
     render() {
         const { onClick } = this.props;
-        const backgroundColor = this.getCellBackground();
+        const className = this.getClassName();
         return (
             <div
-                style={{
-                    backgroundColor: backgroundColor
-                }}
-                className="Cell"
+                className={`Cell ${className}`}
                 onClick={onClick}>
             </div>
         )
     }
 
-} 
+}
 
 export default Cell;

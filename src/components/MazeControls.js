@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 export class MazeControls extends Component {
 
     render() {
-        const { onClick } = this.props;
+        const { onClick, startDijkstra } = this.props;
         return (
             <div className="MazeControls">
                 <button onClick={() => onClick('initial')}>
@@ -14,6 +14,9 @@ export class MazeControls extends Component {
                 </button>
                 <button onClick={() => onClick('wall')}>
                     Wall Cells
+                </button>
+                <button onClick={startDijkstra}>
+                    Start Dikjstra
                 </button>
             </div>
         );

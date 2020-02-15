@@ -15,20 +15,50 @@
 .app {
     min-width: 50%;
     height: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
 }
 
 .Grid {
-    grid-gap: 1px 1px;
+    
 }
 
 .Cell {
     border: 0.1px solid black;
 }
 
+.visited {
+    border: 1px solid white;
+    background-color: green;
+}
+
+.wall {
+    border: 1px solid white;
+    background-color: black;
+}
+
+.initialCell {
+    border: 1px solid white;
+    background-color: blue;
+}
+
+.finalCell {
+    border: 1px solid white;
+    background-color: red;
+}
+
+.camino {
+    border: 1px solid white;
+    background-color: purple;
+}
+
 .MazeControls {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: space-evenly;
+    height: 50px;
     align-items: center;
 }
