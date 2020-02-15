@@ -1,0 +1,34 @@
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+#root {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.app {
+    min-width: 50%;
+    height: 50%;
+}
+
+.Grid {
+    grid-gap: 1px 1px;
+}
+
+.Cell {
+    border: 0.1px solid black;
+}
+
+.MazeControls {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
