@@ -5,11 +5,11 @@ class Cell extends Component {
 
     getClassName = () => {
         const { visited, isWall, isInitialCell, isFinalCell, isCamino } = this.props;
-        if (isCamino) return 'camino';
-        if (visited) return 'visited';
-        if (isWall) return 'wall';
         if (isInitialCell) return 'initialCell';
         if (isFinalCell) return 'finalCell';
+        if (isCamino) return 'camino';
+        if (isWall) return 'wall';
+        if (visited) return 'visited';
         return '';
     }
 
