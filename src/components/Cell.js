@@ -14,12 +14,14 @@ class Cell extends Component {
     }
 
     render() {
-        const { onClick } = this.props;
+        const { onClick, onMouseUp, onMouseMove, index } = this.props;
         const className = this.getClassName();
         return (
             <div
                 className={`Cell ${className}`}
-                onClick={onClick}>
+                onMouseDown={() => onClick(index)}
+                onMouseUp={onMouseUp}
+                onMouseMove={() => onMouseMove(index)}>
             </div>
         )
     }

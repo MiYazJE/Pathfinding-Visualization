@@ -15,6 +15,9 @@ export class MazeControls extends Component {
                 <button onClick={() => onClick('wall')}>
                     Wall Cells
                 </button>
+                <button onClick={() => onClick('clear')}>
+                    Clear Cells
+                </button>
                 <button onClick={startDijkstra}>
                     Start Dikjstra
                 </button>

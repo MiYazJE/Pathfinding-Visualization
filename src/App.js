@@ -27,22 +27,24 @@ class App extends Component {
 			indexInitialCell: null,
 			indexFinalCell: null,
 			controls: {
-				setWalls: false,
-				setInitialCell: true,
-				setFinalCell: false,
+				setInitial: true,
+				setWall: false,
+				setFinal: false,
+				setClear: false,
 			},
 		}
 		this.refApp = React.createRef();
 	}
 
 	dijkstra = async () => {
-		if (!this.state.indexInitialCell || !this.state.indexFinalCell)
+		if (!this.state.indexInitialCell === null ||
+			!this.state.indexFinalCell === null)
 			return;
 
 		const { maze, indexInitialCell, indexFinalCell, ROW_CELLS } = this.state;
 
-		const q = new PriorityQueue({ 
-			comparator: (a, b) => a.weight - b.weight, 
+		const q = new PriorityQueue({
+			comparator: (a, b) => a.weight - b.weight,
 			strategy: PriorityQueue.ArrayStrategy
 		});
 		const distances = new Array(maze.length * maze[0].length).fill(Number.MAX_VALUE);
@@ -52,10 +54,8 @@ class App extends Component {
 		while (q.length !== 0) {
 
 			let current = q.dequeue();
-			console.log(q)
 
 			if (current.indexNode === indexFinalCell) {
-				console.log('Nodo final encontrado!');
 				break;
 			}
 
@@ -91,7 +91,7 @@ class App extends Component {
 
 		}
 
-		let currentIndex = indexFinalCell; 
+		let currentIndex = indexFinalCell;
 		while (true) {
 			const [i, j] = this.getRowAndColIndex(currentIndex);
 			maze[i][j].isCamino = true;
@@ -140,14 +140,16 @@ class App extends Component {
 
 	handleControls = (typeControl) => {
 		const controls = {
-			setInitialCell: false,
-			setFinalCell: false,
-			setWalls: false
+			setInitial: false,
+			setFinal: false,
+			setWall: false,
+			setClear: false,
 		}
 		switch (typeControl) {
-			case 'initial': controls.setInitialCell = true; break;
-			case 'final': controls.setFinalCell = true; break;
-			case 'wall': controls.setWalls = true; break;
+			case 'initial': controls.setInitial = true; break;
+			case 'final': controls.setFinal = true; break;
+			case 'wall': controls.setWall = true; break;
+			case 'clear': controls.setClear = true; break;
 			default: break;
 		}
 		this.setState({ controls });
@@ -173,15 +175,18 @@ class App extends Component {
 		const [i, j] = this.getRowAndColIndex(index);
 		let confCell = maze[i][j];
 
-		if (controls.setWalls) {
+		if (controls.setWall) {
 			confCell = this.getInitialCellConf(index);
 			confCell.isWall = true;
 		}
-		else if (controls.setInitialCell) {
+		else if (controls.setInitial) {
 			confCell = this.handleInitialCell(confCell, index);
 		}
-		else if (controls.setFinalCell) {
+		else if (controls.setFinal) {
 			confCell = this.handleFinalCell(confCell, index);
+		}
+		else if (controls.setClear) {
+			confCell = this.getInitialCellConf(index);
 		}
 
 		maze[i][j] = confCell;

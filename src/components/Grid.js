@@ -3,6 +3,13 @@ import Cell from './Cell';
 
 class Grid extends Component {
 
+    constructor(props) {
+        super(props);
+        this.state = {
+            mouseDown: false,
+        }
+    }
+
     createMaze() {
 
         const { colCells, rowCells, getInitialCellConf } = this.props;
@@ -21,10 +28,8 @@ class Grid extends Component {
         this.setState({ maze })
     }
 
-    
-
     createGridComponent = () => {
-        const { cellHeight, cellWidth, colCells, rowCells } = this.props;
+        const { colCells, rowCells } = this.props;
         const gridComponent = [];
 
         for (let i = 0; i < rowCells; i++) {
@@ -33,15 +38,16 @@ class Grid extends Component {
                     const index = (i * rowCells + j);
                     return (
                         <Cell
-                            cellWidth={cellWidth}
-                            cellHeight={cellHeight}
                             key={index}
+                            index={index}
                             visited={this.props.maze[i][j].visited}
                             isWall={this.props.maze[i][j].isWall}
                             isInitialCell={this.props.maze[i][j].isInitialCell}
                             isFinalCell={this.props.maze[i][j].isFinalCell}
                             isCamino={this.props.maze[i][j].isCamino}
-                            onClick={() => this.props.onClick(index)}
+                            onClick={this.handleClickCell}
+                            onMouseMove={this.handleMouseMove}
+                            onMouseUp={this.handleMouseUp}
                         />
                     )
                 })
@@ -49,6 +55,23 @@ class Grid extends Component {
         }
 
         return gridComponent;
+    }
+
+    handleClickCell = (index) => {
+        this.setState({ mouseDown: true });
+        this.props.onClick(index);
+    }
+    
+    handleMouseMove = (index) => {
+        if (this.state.mouseDown) {
+            this.props.onClick(index);
+        }
+    }
+    
+    handleMouseUp = () => {
+        console.log(this.state.mouseDown)
+        this.setState({ mouseDown: false });
+        console.log(this.state.mouseDown)
     }
 
     render() {
