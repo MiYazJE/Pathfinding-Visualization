@@ -32,6 +32,7 @@ class App extends Component {
 				setFinal: false,
 				setClear: false,
 			},
+			timeSleep: 100,
 		}
 		this.refApp = React.createRef();
 	}
@@ -41,7 +42,7 @@ class App extends Component {
 			!this.state.indexFinalCell === null)
 			return;
 
-		const { maze, indexInitialCell, indexFinalCell, ROW_CELLS } = this.state;
+		const { maze, indexInitialCell, indexFinalCell, ROW_CELLS, timeSleep } = this.state;
 
 		const q = new PriorityQueue({
 			comparator: (a, b) => a.weight - b.weight,
@@ -51,11 +52,14 @@ class App extends Component {
 		q.queue(new State(indexInitialCell, 0));
 		distances[indexInitialCell] = 0;
 
+		let found = false;
+
 		while (q.length !== 0) {
 
 			let current = q.dequeue();
 
 			if (current.indexNode === indexFinalCell) {
+				found = true;
 				break;
 			}
 
@@ -65,7 +69,7 @@ class App extends Component {
 
 			maze[i][j].visited = true;
 			this.setState({ maze })
-			await sleep(100)
+			await sleep(timeSleep)
 
 			for (let row = -1; row <= 1; row++) {
 				for (let col = -1; col <= 1; col++) {
@@ -91,14 +95,23 @@ class App extends Component {
 
 		}
 
+		if (found) 
+			this.printPath();
+	}
+
+	printPath = async () => {
+
+		const {indexFinalCell, maze} = this.state;
+
 		let currentIndex = indexFinalCell;
+
 		while (true) {
 			const [i, j] = this.getRowAndColIndex(currentIndex);
 			maze[i][j].isCamino = true;
+			this.setState({ maze });
+			await sleep(this.state.timeSleep);
 			if (maze[i][j].parent == null) break;
 			currentIndex = maze[i][j].parent.index;
-			this.setState({ maze });
-			await sleep(100);
 		}
 
 	}
