@@ -69,9 +69,7 @@ class Grid extends Component {
     }
     
     handleMouseUp = () => {
-        console.log(this.state.mouseDown)
         this.setState({ mouseDown: false });
-        console.log(this.state.mouseDown)
     }
 
     render() {

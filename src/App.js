@@ -98,7 +98,7 @@ class App extends Component {
 			if (maze[i][j].parent == null) break;
 			currentIndex = maze[i][j].parent.index;
 			this.setState({ maze });
-			await sleep(200);
+			await sleep(100);
 		}
 
 	}
@@ -119,11 +119,23 @@ class App extends Component {
 		return maze;
 	}
 
+	clearGrid = () => {
+		
+		const { maze } = this.state;
+
+		for (let i = 0; i < maze.length; i++) {
+			for (let j = 0; j < maze[i].length; j++) {
+				maze[i][j] = this.getInitialCellConf(maze[i][j].index);
+			}
+		}
+
+		this.setState({ maze });
+	}
+
 	componentDidMount() {
 
 		const { clientWidth } = this.refApp.current;
 
-		// Create maze
 		const maze = this.createMaze();
 
 		this.setState({
@@ -230,7 +242,7 @@ class App extends Component {
 
 		return (
 			<div ref={this.refApp} className="app">
-				<MazeControls startDijkstra={this.dijkstra} onClick={this.handleControls} />
+				<MazeControls clearGrid={this.clearGrid} startDijkstra={this.dijkstra} onClick={this.handleControls} />
 				{showGrid &&
 					<Grid
 						onClick={this.handleClickCell}

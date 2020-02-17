@@ -10,7 +10,7 @@ class Cell extends Component {
         if (isCamino) return 'camino';
         if (isWall) return 'wall';
         if (visited) return 'visited';
-        return '';
+        return 'white';
     }
 
     render() {

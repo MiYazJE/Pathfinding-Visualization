@@ -5,6 +5,7 @@
 }
 
 #root {
+    background-color: #6b5b95;
     width: 100%;
     height: 100vh;
     display: flex;
@@ -31,7 +32,6 @@
 }
 
 .wall {
-    border: 1px solid white;
     background-color: black;
 }
 
@@ -45,16 +45,57 @@
     background-color: red;
 }
 
+.white {
+    background-color:white;
+}
+
 .camino {
-    border: 1px solid white;
+    border: 1px solid black;
     background-color: purple;
 }
 
 .MazeControls {
+    width: 130%;
+    min-height: 80px;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: space-evenly;
-    height: 50px;
     align-items: center;
+}
+
+.btnControls {
+    background-color: #feb236;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    color: white;
+    border-radius: 5px;
+    padding: 5px;
+    transition: background-color .4s ease-in-out;
+}
+
+.btnControls:hover {
+    background-color: #d64161;
+}
+
+.btnDijkstra {
+    background-color: red;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    color: white;
+    border-radius: 5px;
+    padding: 5px;
+    opacity: .5;
+    transition: opacity .4s ease-in-out;
+} 
+
+.btnDijkstra:hover {
+    opacity: 1;
+}
+
+.btnControls:active, 
+.btnDijkstra:active {
+    transform: translateY(2px);
 }

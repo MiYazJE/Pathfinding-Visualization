@@ -3,22 +3,25 @@ import React, { Component } from 'react';
 export class MazeControls extends Component {
 
     render() {
-        const { onClick, startDijkstra } = this.props;
+        const { onClick, startDijkstra, clearGrid } = this.props;
         return (
             <div className="MazeControls">
-                <button onClick={() => onClick('initial')}>
-                    Initial Cell
+                <button className="btnControls" onClick={() => onClick('initial')}>
+                    Set Initial
                 </button>
-                <button onClick={() => onClick('final')}>
-                    Final Cell
+                <button className="btnControls" onClick={() => onClick('final')}>
+                    Set Final
                 </button>
-                <button onClick={() => onClick('wall')}>
-                    Wall Cells
+                <button className="btnControls" onClick={() => onClick('wall')}>
+                    Set Walls
                 </button>
-                <button onClick={() => onClick('clear')}>
-                    Clear Cells
+                <button className="btnControls" onClick={() => onClick('clear')}>
+                    Clear cell
                 </button>
-                <button onClick={startDijkstra}>
+                <button className="btnControls" onClick={clearGrid}>
+                    Clear grid
+                </button>
+                <button className="btnDijkstra" onClick={startDijkstra}>
                     Start Dikjstra
                 </button>
             </div>
