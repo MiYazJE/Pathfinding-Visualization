@@ -29,11 +29,9 @@ export class MazeControls extends Component {
                 <p className="controls-message">
                     {message} 
                 </p>
-                {errorMessage && 
-                    <p className="error-message">
-                        {errorMessage} 
-                    </p>
-                }
+                <p className={`${errorMessage ? ' error-message display' : 'hide'}`}>
+                    {errorMessage} 
+                </p>
             </div>
         );
     }

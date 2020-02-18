@@ -8,6 +8,7 @@
 #root {
     background-color: #6b5b95;
     width: 100%;
+    min-height: 100vh;
     height: 100vh;
     display: flex;
     align-items: flex-start;
@@ -24,6 +25,7 @@
 .Cell {
     border: 0.1px solid black;
     transition: background-color .2s ease-in-out;
+    cursor: pointer;
 }
 
 .visited {
@@ -55,6 +57,7 @@
 }
 
 .MazeControls {
+    margin-top: 5%;
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -74,17 +77,28 @@
 }
 
 .controls-message {
+    font-size: 20px;
     padding: 0px;
-    margin-top: 5px;
+    margin-top: 2%;
 }
 
 .error-message {
+    font-size: 18px;
     background-color: red;
     color: white;
     padding: 1px 4px;
-    border-radius: 2px;
+    border-radius: 10px;
     margin: 5px 0px;
-    transition: all .5s ease-in-out;
+    transition: opacity .5s ease-in-out;
+    opacity: 0;
+}
+
+.display {
+    opacity: 1;
+}
+
+.hide {
+    opacity: 0;
 }
 
 .btnControls {
@@ -94,7 +108,7 @@
     cursor: pointer;
     color: white;
     border-radius: 5px;
-    padding: 5px;
+    padding: 1rem;
     transition: background-color .4s ease-in-out;
 }
 
@@ -109,7 +123,7 @@
     cursor: pointer;
     color: white;
     border-radius: 5px;
-    padding: 5px;
+    padding: 1rem;
     opacity: .5;
     transition: opacity .4s ease-in-out;
 } 
@@ -121,4 +135,13 @@
 .btnControls:active, 
 .btnDijkstra:active {
     transform: translateY(2px);
+}
+
+.wrap-grid {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1% 0px; 
 }

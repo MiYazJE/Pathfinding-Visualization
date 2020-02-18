@@ -18,8 +18,8 @@ class App extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			ROW_CELLS: 10,
-			COL_CELLS: 10,
+			ROW_CELLS: 20,
+			COL_CELLS: 20,
 			showGrid: false,
 			cellHeight: null,
 			cellWidth: null,
@@ -32,12 +32,12 @@ class App extends Component {
 				setFinal: false,
 				setClear: false,
 			},
-			timeSleep: 5,
+			timeSleep: 40,
 			isExecuting: false,
 			message: 'Initial cells selected',
 			errorMessage: null,
 		}
-		this.refApp = React.createRef();
+		this.refWrapGrid = React.createRef();
 	}
 
 	startingDijkstra = () => {
@@ -46,7 +46,7 @@ class App extends Component {
 				this.setState({
 					errorMessage: 'Can not start dijkstra without initial and final cells not being established! \nPlease set them and try again.'
 				});
-				setTimeout(() => this.setState({ errorMessage: null }), 8000);
+				setTimeout(() => this.setState({ errorMessage: null }), 10000);
 				return;
 			}
 			
@@ -173,13 +173,13 @@ class App extends Component {
 
 	componentDidMount() {
 
-		const { clientWidth, clientHeight } = this.refApp.current;
+		const { clientHeight } = this.refWrapGrid.current;
 
 		const maze = this.createMaze();
 
 		this.setState({
-			cellWidth: /*(clientHeight / this.state.ROW_CELLS)*/10,
-			cellHeight: /*(clientHeight / this.state.COL_CELLS)*/10,
+			cellWidth: (clientHeight * 0.9 / this.state.ROW_CELLS),
+			cellHeight: (clientHeight * 0.9 / this.state.COL_CELLS),
 			showGrid: true,
 			maze,
 		})
@@ -301,7 +301,7 @@ class App extends Component {
 		const { maze, ROW_CELLS, COL_CELLS, cellWidth, cellHeight, showGrid, message, errorMessage } = this.state;
 
 		return (
-			<div ref={this.refApp} className="app">
+			<div className="app">
 				<MazeControls 
 					clearGrid={this.clearGrid}
 					startDijkstra={this.startingDijkstra} 
@@ -309,16 +309,19 @@ class App extends Component {
 					message={message}
 					errorMessage={errorMessage}
 				/>
-				{showGrid &&
-					<Grid
-						onClick={this.handleClickCell}
-						maze={maze}
-						rowCells={ROW_CELLS}
-						colCells={COL_CELLS}
-						cellWidth={cellWidth}
-						cellHeight={cellHeight}
-						getInitialCellConf={this.getInitialCellConf}
-					/>}
+				<div className="wrap-grid" ref={this.refWrapGrid}>
+					{showGrid &&
+						<Grid
+							onClick={this.handleClickCell}
+							maze={maze}
+							rowCells={ROW_CELLS}
+							colCells={COL_CELLS}
+							cellWidth={cellWidth}
+							cellHeight={cellHeight}
+							getInitialCellConf={this.getInitialCellConf}
+						/>
+					}
+				</div>
 			</div>
 		)
 	}
