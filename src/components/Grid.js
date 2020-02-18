@@ -41,6 +41,7 @@ class Grid extends Component {
                             key={index}
                             index={index}
                             visited={this.props.maze[i][j].visited}
+                            animate={this.props.maze[i][j].animate}
                             isWall={this.props.maze[i][j].isWall}
                             isInitialCell={this.props.maze[i][j].isInitialCell}
                             isFinalCell={this.props.maze[i][j].isFinalCell}

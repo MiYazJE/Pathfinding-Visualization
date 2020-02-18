@@ -87,6 +87,7 @@ class App extends Component {
 				continue;
 
 			maze[i][j].visited = true;
+			maze[i][j].animate = true;
 			this.setState({ maze })
 			await sleep(timeSleep)
 
@@ -129,8 +130,12 @@ class App extends Component {
 
 		while (true) {
 			const [i, j] = this.getRowAndColIndex(currentIndex);
-			maze[i][j].isCamino = true;
-			this.setState({ maze });
+			maze[i][j].animate = false;
+			await this.setState({ maze }, () => setTimeout(() => {
+				maze[i][j].isCamino = true;
+				maze[i][j].animate = true;
+				this.setState({ maze });
+			}));
 			await sleep(this.state.timeSleep);
 			if (maze[i][j].parent == null) break;
 			currentIndex = maze[i][j].parent.index;
@@ -236,6 +241,7 @@ class App extends Component {
 			isCamino: false,
 			parent: null,
 			weight: 0,
+			animate: false,
 			index
 		}
 	}
@@ -251,6 +257,7 @@ class App extends Component {
 		if (controls.setWall) {
 			confCell = this.getInitialCellConf(index);
 			confCell.isWall = true;
+			confCell.animate = true;
 		}
 		else if (controls.setInitial) {
 			confCell = this.handleInitialCell(confCell, index);
@@ -278,6 +285,7 @@ class App extends Component {
 
 		confCell = this.getInitialCellConf(index);
 		confCell.isInitialCell = true;
+		confCell.animate = true;
 		this.setState({ indexInitialCell: index });
 		return confCell;
 	}
@@ -294,6 +302,7 @@ class App extends Component {
 
 		confCell = this.getInitialCellConf(index);
 		confCell.isFinalCell = true;
+		confCell.animate = true;
 		this.setState({ indexFinalCell: index });
 		return confCell;
 	}
