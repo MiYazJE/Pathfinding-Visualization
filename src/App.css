@@ -106,8 +106,8 @@
     border: none;
     outline: none;
     cursor: pointer;
-    color: white;
     border-radius: 5px;
+    font-size: 15px;
     padding: 1rem;
     transition: background-color .4s ease-in-out;
 }
@@ -117,19 +117,21 @@
 }
 
 .btnDijkstra {
+    font-weight: bolder;
+    font-size: 15px;
     background-color: red;
     border: none;
     outline: none;
     cursor: pointer;
-    color: white;
     border-radius: 5px;
     padding: 1rem;
-    opacity: .5;
-    transition: opacity .4s ease-in-out;
+    transition: all .4s ease-in-out;
+    color: white;
 } 
 
 .btnDijkstra:hover {
-    opacity: 1;
+    background-color: white;
+    color: black;
 }
 
 .btnControls:active, 
@@ -144,4 +146,30 @@
     justify-content: center;
     align-items: center;
     padding: 1% 0px; 
+}
+
+.wrap-githubIcon {
+    position: absolute;
+    top: 1%;
+    left: 1%;
+}
+
+.wrap-githubIcon a {
+    text-decoration: none;
+    color: black;
+}
+
+.wrap-githubIcon svg {
+    width: 30px;
+    height: 30px;
+    transition: color .4s ease-in-out;
+    cursor: pointer;
+}
+
+.wrap-githubIcon svg:hover {
+    color: white;
+}
+
+.wrap-githubIcon svg:active {
+    transform: translateY(3px);
 }

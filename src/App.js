@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Grid from './components/Grid';
 import MazeControls from './components/MazeControls';
+import { FaGithubAlt } from 'react-icons/fa';
 import './App.css';
 const PriorityQueue = require('js-priority-queue');
 
@@ -302,6 +303,15 @@ class App extends Component {
 
 		return (
 			<div className="app">
+				<div className="wrap-githubIcon">
+					<a 
+						href="https://github.com/MiYazJE/PathfindingViewer/"
+						target="_blank"
+						alt="github repository of this proyect"
+						title="See the code!">
+							<FaGithubAlt />
+					</a>
+				</div>
 				<MazeControls 
 					clearGrid={this.clearGrid}
 					startDijkstra={this.startingDijkstra} 
