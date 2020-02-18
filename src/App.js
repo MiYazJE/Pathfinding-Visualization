@@ -18,8 +18,8 @@ class App extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			ROW_CELLS: 20,
-			COL_CELLS: 20,
+			ROW_CELLS: 10,
+			COL_CELLS: 10,
 			showGrid: false,
 			cellHeight: null,
 			cellWidth: null,
@@ -32,16 +32,34 @@ class App extends Component {
 				setFinal: false,
 				setClear: false,
 			},
-			timeSleep: 100,
+			timeSleep: 5,
+			isExecuting: false,
+			message: 'Initial cells selected',
+			errorMessage: null,
 		}
 		this.refApp = React.createRef();
 	}
 
-	dijkstra = async () => {
-		if (!this.state.indexInitialCell === null ||
-			!this.state.indexFinalCell === null)
-			return;
+	startingDijkstra = () => {
+		if (this.state.indexInitialCell === null ||
+			this.state.indexFinalCell === null) {
+				this.setState({
+					errorMessage: 'Can not start dijkstra without initial and final cells not being established! \nPlease set them and try again.'
+				});
+				setTimeout(() => this.setState({ errorMessage: null }), 8000);
+				return;
+			}
+			
 
+		this.setState({ 
+			isExecuting: true,
+			errorMessage: null
+		});
+
+		this.dijkstra();
+	}
+
+	dijkstra = async () => {
 		const { maze, indexInitialCell, indexFinalCell, ROW_CELLS, timeSleep } = this.state;
 
 		const q = new PriorityQueue({
@@ -73,7 +91,8 @@ class App extends Component {
 
 			for (let row = -1; row <= 1; row++) {
 				for (let col = -1; col <= 1; col++) {
-					if (Math.abs(row + col) !== 1) continue;
+					// Prevent diagonal cells to explore
+					if (Math.abs(row + col) !== 1) continue; 
 
 					let y = i + row;
 					let x = j + col;
@@ -83,8 +102,8 @@ class App extends Component {
 
 					let potentialWeight = current.weight + maze[y][x].weight + 1;
 					if (potentialWeight < distances[maze[y][x].index]) {
-						let index = y * ROW_CELLS + x;
-						q.queue(new State(index, potentialWeight));
+						let indexAdyacentCell = y * ROW_CELLS + x;
+						q.queue(new State(indexAdyacentCell, potentialWeight));
 						maze[y][x].weight = potentialWeight;
 						maze[y][x].parent = maze[i][j];
 						distances[maze[y][x].index] = potentialWeight;
@@ -97,6 +116,8 @@ class App extends Component {
 
 		if (found) 
 			this.printPath();
+
+		this.setState({ isExecuting: false });
 	}
 
 	printPath = async () => {
@@ -133,7 +154,8 @@ class App extends Component {
 	}
 
 	clearGrid = () => {
-		
+		if (this.state.isExecuting) return;		
+
 		const { maze } = this.state;
 
 		for (let i = 0; i < maze.length; i++) {
@@ -142,18 +164,22 @@ class App extends Component {
 			}
 		}
 
-		this.setState({ maze });
+		this.setState({ 
+			indexInitialCell: null,
+			indexFinalCell: null,
+			maze 
+		});
 	}
 
 	componentDidMount() {
 
-		const { clientWidth } = this.refApp.current;
+		const { clientWidth, clientHeight } = this.refApp.current;
 
 		const maze = this.createMaze();
 
 		this.setState({
-			cellWidth: (clientWidth / this.state.ROW_CELLS),
-			cellHeight: (clientWidth / this.state.COL_CELLS),
+			cellWidth: /*(clientHeight / this.state.ROW_CELLS)*/10,
+			cellHeight: /*(clientHeight / this.state.COL_CELLS)*/10,
 			showGrid: true,
 			maze,
 		})
@@ -164,6 +190,7 @@ class App extends Component {
 	}
 
 	handleControls = (typeControl) => {
+		let message;
 		const controls = {
 			setInitial: false,
 			setFinal: false,
@@ -171,13 +198,32 @@ class App extends Component {
 			setClear: false,
 		}
 		switch (typeControl) {
-			case 'initial': controls.setInitial = true; break;
-			case 'final': controls.setFinal = true; break;
-			case 'wall': controls.setWall = true; break;
-			case 'clear': controls.setClear = true; break;
+			case 'initial': {
+				controls.setInitial = true; 
+				message = 'Initial cells selected';
+				break;
+			}
+			case 'final': {
+				controls.setFinal = true; 
+				message = 'Final cells selected';
+				break;
+			}
+			case 'wall': {
+				controls.setWall = true; 
+				message = 'Wall cells selected';
+				break;
+			}
+			case 'clear': {
+				controls.setClear = true; 
+				message = 'Clear cells selected';
+				break;
+			}
 			default: break;
 		}
-		this.setState({ controls });
+		this.setState({ 
+			controls, 
+			message,
+		});
 	}
 
 	getInitialCellConf = (index) => {
@@ -194,6 +240,7 @@ class App extends Component {
 	}
 
 	handleClickCell = (index) => {
+		if (this.state.isExecuting) return;
 
 		const { controls, maze } = this.state;
 
@@ -251,11 +298,17 @@ class App extends Component {
 	}
 
 	render() {
-		const { maze, ROW_CELLS, COL_CELLS, cellWidth, cellHeight, showGrid } = this.state;
+		const { maze, ROW_CELLS, COL_CELLS, cellWidth, cellHeight, showGrid, message, errorMessage } = this.state;
 
 		return (
 			<div ref={this.refApp} className="app">
-				<MazeControls clearGrid={this.clearGrid} startDijkstra={this.dijkstra} onClick={this.handleControls} />
+				<MazeControls 
+					clearGrid={this.clearGrid}
+					startDijkstra={this.startingDijkstra} 
+					onClick={this.handleControls} 
+					message={message}
+					errorMessage={errorMessage}
+				/>
 				{showGrid &&
 					<Grid
 						onClick={this.handleClickCell}
