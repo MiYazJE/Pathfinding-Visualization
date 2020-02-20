@@ -1,16 +1,11 @@
-import React, { Component } from 'react';
+import React, { Component, createContext } from 'react';
 import Grid from './components/Grid';
 import MazeControls from './components/MazeControls';
 import { FaGithubAlt } from 'react-icons/fa';
+import State from './DataStructures/State';
 import './App.css';
+import MazeCreator from './Algorithms/MazeCreator';
 const PriorityQueue = require('js-priority-queue');
-
-class State {
-	constructor(index, weight) {
-		this.indexNode = index;
-		this.weight = weight;
-	}
-}
 
 const sleep = (time) => new Promise(res => setTimeout(res, time));
 
@@ -19,8 +14,8 @@ class App extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			ROW_CELLS: 20,
-			COL_CELLS: 20,
+			ROW_CELLS: 21,
+			COL_CELLS: 21,
 			showGrid: false,
 			cellHeight: null,
 			cellWidth: null,
@@ -39,6 +34,21 @@ class App extends Component {
 			errorMessage: null,
 		}
 		this.refWrapGrid = React.createRef();
+	}
+
+	updateMaze = async (maze) => {
+		this.setState({ maze });
+		await sleep(30);
+	}
+
+	createMazeDfs = () => {
+		console.log('creating the maze with dfs...');
+
+		const creator = new MazeCreator(
+			this.state.maze, this.updateMaze, this.getRowAndColIndex 
+		);
+
+		creator.crearLaberinto();
 	}
 
 	startingDijkstra = () => {
@@ -322,6 +332,7 @@ class App extends Component {
 					</a>
 				</div>
 				<MazeControls 
+					createMazeDfs={this.createMazeDfs}
 					clearGrid={this.clearGrid}
 					startDijkstra={this.startingDijkstra} 
 					onClick={this.handleControls} 
