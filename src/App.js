@@ -2,10 +2,9 @@ import React, { Component, createContext } from 'react';
 import Grid from './components/Grid';
 import MazeControls from './components/MazeControls';
 import { FaGithubAlt } from 'react-icons/fa';
-import State from './DataStructures/State';
 import './App.css';
 import MazeCreator from './Algorithms/MazeCreator';
-const PriorityQueue = require('js-priority-queue');
+import Dijkstra from './Algorithms/Dijkstra';
 
 const sleep = (time) => new Promise(res => setTimeout(res, time));
 
@@ -28,7 +27,7 @@ class App extends Component {
 				setFinal: false,
 				setClear: false,
 			},
-			timeSleep: 40,
+			timeSleep: 60,
 			isExecuting: false,
 			message: 'Initial cells selected',
 			errorMessage: null,
@@ -37,13 +36,13 @@ class App extends Component {
 	}
 
 	updateMaze = async (maze) => {
-		this.setState({ maze });
-		await sleep(30);
+		await this.setState({ maze });
 	}
 
 	createMazeDfs = () => {
 		console.log('creating the maze with dfs...');
 
+		this.clearGrid();
 		const creator = new MazeCreator(
 			this.state.maze, this.updateMaze, this.getRowAndColIndex 
 		);
@@ -51,7 +50,9 @@ class App extends Component {
 		creator.crearLaberinto();
 	}
 
-	startingDijkstra = () => {
+	startingDijkstra = async () => {
+		const { indexFinalCell, indexInitialCell, maze, timeSleep } = this.state;
+
 		if (this.state.indexInitialCell === null ||
 			this.state.indexFinalCell === null) {
 				this.setState({
@@ -67,90 +68,8 @@ class App extends Component {
 			errorMessage: null
 		});
 
-		this.dijkstra();
-	}
-
-	dijkstra = async () => {
-		const { maze, indexInitialCell, indexFinalCell, ROW_CELLS, timeSleep } = this.state;
-
-		const q = new PriorityQueue({
-			comparator: (a, b) => a.weight - b.weight,
-			strategy: PriorityQueue.ArrayStrategy
-		});
-		const distances = new Array(maze.length * maze[0].length).fill(Number.MAX_VALUE);
-		q.queue(new State(indexInitialCell, 0));
-		distances[indexInitialCell] = 0;
-
-		let found = false;
-
-		while (q.length !== 0) {
-
-			let current = q.dequeue();
-
-			if (current.indexNode === indexFinalCell) {
-				found = true;
-				break;
-			}
-
-			const [i, j] = this.getRowAndColIndex(current.indexNode);
-			if (maze[i][j].visited || maze[i][j].isWall || current.weight > maze[i][j].weight)
-				continue;
-
-			maze[i][j].visited = true;
-			maze[i][j].animate = true;
-			this.setState({ maze })
-			await sleep(timeSleep)
-
-			for (let row = -1; row <= 1; row++) {
-				for (let col = -1; col <= 1; col++) {
-					// Prevent diagonal cells to explore
-					if (Math.abs(row + col) !== 1) continue; 
-
-					let y = i + row;
-					let x = j + col;
-
-					if (y < 0 || x < 0 || y >= maze.length || x >= maze[0].length || maze[y][x].visited)
-						continue;
-
-					let potentialWeight = current.weight + maze[y][x].weight + 1;
-					if (potentialWeight < distances[maze[y][x].index]) {
-						let indexAdyacentCell = y * ROW_CELLS + x;
-						q.queue(new State(indexAdyacentCell, potentialWeight));
-						maze[y][x].weight = potentialWeight;
-						maze[y][x].parent = maze[i][j];
-						distances[maze[y][x].index] = potentialWeight;
-					}
-
-				}
-			}
-
-		}
-
-		if (found) 
-			this.printPath();
-
-		this.setState({ isExecuting: false });
-	}
-
-	printPath = async () => {
-
-		const {indexFinalCell, maze} = this.state;
-
-		let currentIndex = indexFinalCell;
-
-		while (true) {
-			const [i, j] = this.getRowAndColIndex(currentIndex);
-			maze[i][j].animate = false;
-			await this.setState({ maze }, () => setTimeout(() => {
-				maze[i][j].isCamino = true;
-				maze[i][j].animate = true;
-				this.setState({ maze });
-			}));
-			await sleep(this.state.timeSleep);
-			if (maze[i][j].parent == null) break;
-			currentIndex = maze[i][j].parent.index;
-		}
-
+		await new Dijkstra(maze, this.updateMaze).start(indexInitialCell, indexFinalCell, timeSleep);
+		this.setState({ isExecuting: false })
 	}
 
 	createMaze = () => {
