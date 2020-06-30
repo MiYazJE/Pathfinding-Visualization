@@ -1,31 +1,34 @@
-import React, { Component } from 'react';
+import React from 'react';
 
-
-class Cell extends Component {
-
-    getClassName = () => {
-        const { visited, isWall, isInitialCell, isFinalCell, isCamino } = this.props;
+const Cell = ({
+    visited,
+    isWall,
+    isBacktrack,
+    isFinalCell,
+    isInitialCell,
+    onClick,
+    onMouseUp,
+    onMouseMove,
+    index,
+    animate,
+}) => {
+    const getClassName = () => {
         if (isInitialCell) return 'initialCell';
         if (isFinalCell) return 'finalCell';
-        if (isCamino) return 'camino';
+        if (isBacktrack) return 'backtrack';
         if (isWall) return 'wall';
         if (visited) return 'visited';
         return 'white';
-    }
+    };
 
-    render() {
-        const { onClick, onMouseUp, onMouseMove, index, animate } = this.props;
-        const className = this.getClassName();
-        return (
-            <div
-                className={`Cell ${className} ${animate ? 'cellStart' : ''}`}
-                onMouseDown={() => onClick(index)}
-                onMouseUp={onMouseUp}
-                onMouseMove={() => onMouseMove(index)}>
-            </div>
-        )
-    }
-
-}
+    return (
+        <div
+            className={`Cell ${getClassName()} ${animate ? 'cellStart' : ''}`}
+            onMouseDown={() => onClick(index)}
+            onMouseUp={onMouseUp}
+            onMouseMove={() => onMouseMove(index)}
+        ></div>
+    );
+};
 
 export default Cell;

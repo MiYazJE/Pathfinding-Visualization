@@ -1,279 +1,271 @@
-import React, { Component, createContext } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Grid from './components/Grid';
 import MazeControls from './components/MazeControls';
 import { FaGithubAlt } from 'react-icons/fa';
 import './App.css';
 import MazeCreator from './Algorithms/MazeCreator';
 import Dijkstra from './Algorithms/Dijkstra';
+import { NotificationContainer, NotificationManager } from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
 
-const sleep = (time) => new Promise(res => setTimeout(res, time));
+const ROW_CELLS = 21;
+const COL_CELLS = 21;
+const SLEEP_TIME = 60;
+const mazeMemo = [];
 
-class App extends Component {
+const INITIAL_CONTROLS = {
+    setInitial: false,
+    setWall: false,
+    setFinal: false,
+    setClear: false,
+};
 
-	constructor(props) {
-		super(props);
-		this.state = {
-			ROW_CELLS: 21,
-			COL_CELLS: 21,
-			showGrid: false,
-			cellHeight: null,
-			cellWidth: null,
-			maze: null, // this contains the data for the algorithm like visited cells, wall cells, initial and final ones
-			indexInitialCell: null,
-			indexFinalCell: null,
-			controls: {
-				setInitial: true,
-				setWall: false,
-				setFinal: false,
-				setClear: false,
-			},
-			timeSleep: 60,
-			isExecuting: false,
-			message: 'Initial cells selected',
-			errorMessage: null,
-		}
-		this.refWrapGrid = React.createRef();
-	}
+const sleep = (time) => new Promise((res) => setTimeout(res, time));
 
-	updateMaze = async (maze) => {
-		await this.setState({ maze });
-	}
+const App = () => {
+    const [showGrid, setShowGrid] = useState(false);
+    const [cellHeight, setCellHeight] = useState(null);
+    const [cellWidth, setCellWidth] = useState(null);
+    const [indexInitialCell, setIndexInitialCell] = useState(null);
+    const [indexFinalCell, setIndexFinalCell] = useState(null);
+    const [maze, setMaze] = useState([]);
+    const [controls, setControls] = useState({ ...INITIAL_CONTROLS, setInitial: true });
+    const [isExecuting, setIsExecuting] = useState(false);
+    const [message, setMessage] = useState('Initial cells selected');
+    const [errorMessage, setErrorMessage] = useState('');
+    const [creatingMaze, setCreatingMaze] = useState(false);
+    const refWrapGrid = useRef();
 
-	createMazeDfs = () => {
-		console.log('creating the maze with dfs...');
+    useEffect(() => {
+        const { clientHeight } = refWrapGrid.current;
+        setCellWidth((clientHeight * 0.9) / ROW_CELLS);
+        setCellHeight((clientHeight * 0.9) / COL_CELLS);
+        setShowGrid(true);
+        initMaze();
+    }, []);
 
-		this.clearGrid();
-		const creator = new MazeCreator(
-			this.state.maze, this.updateMaze, this.getRowAndColIndex 
-		);
+    const initMaze = () => {
+        const initialMaze = [];
+        for (let i = 0; i < ROW_CELLS; i++) {
+            mazeMemo.push(
+                Array.from({ length: COL_CELLS }, (_, j) => {
+                    const index = i * ROW_CELLS + j;
+                    return getInitialCellConf(index);
+                })
+            );
+            initialMaze.push(
+                Array.from({ length: COL_CELLS }, (_, j) => {
+                    const index = i * ROW_CELLS + j;
+                    return getInitialCellConf(index);
+                })
+            );
+        }
+        setMaze([...initialMaze]);
+    };
 
-		creator.crearLaberinto();
-	}
+    const createMazeDfs = async () => {
+        if (creatingMaze) {
+            NotificationManager.error('Error message', 'You already start a maze creation!', 5000);
+            return;
+        }
+        setCreatingMaze(true);
+        clearGrid();
+        const creator = new MazeCreator(mazeMemo, getRowAndColIndex);
 
-	startingDijkstra = async () => {
-		const { indexFinalCell, indexInitialCell, maze, timeSleep } = this.state;
+        const path = creator.makeMaze();
+		await animatePath(path, 1);
+        NotificationManager.success('Maze created!');
+        setCreatingMaze(false);
+    };
 
-		if (this.state.indexInitialCell === null ||
-			this.state.indexFinalCell === null) {
-				this.setState({
-					errorMessage: 'Can not start dijkstra without initial and final cells not being established! \nPlease set them and try again.'
-				});
-				setTimeout(() => this.setState({ errorMessage: null }), 10000);
-				return;
+    const startingDijkstra = async () => {
+        if (indexInitialCell === null || indexFinalCell === null) {
+            setErrorMessage(
+                'Can not start dijkstra without initial and final cells not being established! \nPlease set them and try again.'
+            );
+            setTimeout(() => setErrorMessage(null), 10000);
+            return;
+        }
+
+        setIsExecuting(true);
+        setErrorMessage(null);
+
+        const { path, found } = new Dijkstra(mazeMemo).start(indexInitialCell, indexFinalCell);
+		await animatePath(path, SLEEP_TIME);
+		if (found) NotificationManager.success('The maze has been resolved!');
+		else NotificationManager.error('The maze has not been resolved!');
+        setIsExecuting(false);
+    };
+
+	const animatePath = async (path, timeSleep = SLEEP_TIME) => {
+		while (path.length !== 0) {
+			const { i, j, event } = path.dequeue();
+			if (event === 'visited') {
+				maze[i][j].visited = true;
+			} else if (event === 'backtrack') {
+				maze[i][j].isBacktrack = true;
 			}
-			
-
-		this.setState({ 
-			isExecuting: true,
-			errorMessage: null
-		});
-
-		await new Dijkstra(maze, this.updateMaze).start(indexInitialCell, indexFinalCell, timeSleep);
-		this.setState({ isExecuting: false })
-	}
-
-	createMaze = () => {
-		const { COL_CELLS, ROW_CELLS } = this.state;
-		const maze = [];
-
-		for (let i = 0; i < ROW_CELLS; i++) {
-			maze.push(
-				Array.from({ length: COL_CELLS }, (_, j) => {
-					const index = (i * ROW_CELLS + j);
-					return this.getInitialCellConf(index);
-				})
-			)
-		}
-
-		return maze;
-	}
-
-	clearGrid = () => {
-		if (this.state.isExecuting) return;		
-
-		const { maze } = this.state;
-
-		for (let i = 0; i < maze.length; i++) {
-			for (let j = 0; j < maze[i].length; j++) {
-				maze[i][j] = this.getInitialCellConf(maze[i][j].index);
-			}
-		}
-
-		this.setState({ 
-			indexInitialCell: null,
-			indexFinalCell: null,
-			maze 
-		});
-	}
-
-	componentDidMount() {
-
-		const { clientHeight } = this.refWrapGrid.current;
-
-		const maze = this.createMaze();
-
-		this.setState({
-			cellWidth: (clientHeight * 0.9 / this.state.ROW_CELLS),
-			cellHeight: (clientHeight * 0.9 / this.state.COL_CELLS),
-			showGrid: true,
-			maze,
-		})
-	}
-
-	getRowAndColIndex = (index) => {
-		return [parseInt(index / this.state.ROW_CELLS), parseInt(index % this.state.COL_CELLS)];
-	}
-
-	handleControls = (typeControl) => {
-		let message;
-		const controls = {
-			setInitial: false,
-			setFinal: false,
-			setWall: false,
-			setClear: false,
-		}
-		switch (typeControl) {
-			case 'initial': {
-				controls.setInitial = true; 
-				message = 'Initial cells selected';
-				break;
-			}
-			case 'final': {
-				controls.setFinal = true; 
-				message = 'Final cells selected';
-				break;
-			}
-			case 'wall': {
-				controls.setWall = true; 
-				message = 'Wall cells selected';
-				break;
-			}
-			case 'clear': {
-				controls.setClear = true; 
-				message = 'Clear cells selected';
-				break;
-			}
-			default: break;
-		}
-		this.setState({ 
-			controls, 
-			message,
-		});
-	}
-
-	getInitialCellConf = (index) => {
-		return {
-			visited: false,
-			isWall: false,
-			isInitialCell: false,
-			isFinalCell: false,
-			isCamino: false,
-			parent: null,
-			weight: 0,
-			animate: false,
-			index
+			else if (event === 'wall') {
+                maze[i][j].isWall = true;
+            } else if (event === 'open') {
+                maze[i][j].isWall = false;
+            }
+			setMaze([...maze]);
+			await sleep(timeSleep);
 		}
 	}
 
-	handleClickCell = (index) => {
-		if (this.state.isExecuting) return;
+    const animateDijkstra = async (path) => {
+    };
 
-		const { controls, maze } = this.state;
+    const clearGrid = () => {
+        if (isExecuting) return;
 
-		const [i, j] = this.getRowAndColIndex(index);
-		let confCell = maze[i][j];
+        for (let i = 0; i < maze.length; i++) {
+            for (let j = 0; j < maze[i].length; j++) {
+                maze[i][j] = getInitialCellConf(maze[i][j].index);
+                mazeMemo[i][j] = getInitialCellConf(maze[i][j].index);
+            }
+        }
 
-		if (controls.setWall) {
-			confCell = this.getInitialCellConf(index);
-			confCell.isWall = true;
-			confCell.animate = true;
-		}
-		else if (controls.setInitial) {
-			confCell = this.handleInitialCell(confCell, index);
-		}
-		else if (controls.setFinal) {
-			confCell = this.handleFinalCell(confCell, index);
-		}
-		else if (controls.setClear) {
-			confCell = this.getInitialCellConf(index);
-		}
+        setIndexInitialCell(null);
+        setIndexFinalCell(null);
+        setMaze([...maze]);
+    };
 
-		maze[i][j] = confCell;
-		this.setState({ maze })
-	}
+    const getRowAndColIndex = (index) => {
+        return [parseInt(index / ROW_CELLS), parseInt(index % COL_CELLS)];
+    };
 
-	handleInitialCell = (confCell, index) => {
-		const { indexInitialCell, maze } = this.state;
+    const handleControls = (typeControl) => {
+        switch (typeControl) {
+            case 'initial': {
+                setControls({ ...INITIAL_CONTROLS, setInitial: true });
+                setMessage('Initial cells selected');
+                break;
+            }
+            case 'final': {
+                setControls({ ...INITIAL_CONTROLS, setFinal: true });
+                setMessage('Final cells selected');
+                break;
+            }
+            case 'wall': {
+                setControls({ ...INITIAL_CONTROLS, setWall: true });
+                setMessage('Wall cells selected');
+                break;
+            }
+            case 'clear': {
+                setControls({ ...INITIAL_CONTROLS, setClear: true });
+                setMessage('Clear cells selected');
+                break;
+            }
+        }
+    };
 
-		// Remove previous initial cell if exists
-		if (indexInitialCell != null) {
-			const [row, col] = this.getRowAndColIndex(indexInitialCell);
-			maze[row][col] = this.getInitialCellConf(indexInitialCell);
-			maze[row][col].isInitialCell = false;
-		}
+    const getInitialCellConf = (index) => {
+        return {
+            index,
+            visited: false,
+            isWall: false,
+            isInitialCell: false,
+            isFinalCell: false,
+            isBacktrack: false,
+            parent: null,
+            weight: 0,
+            animate: false,
+        };
+    };
 
-		confCell = this.getInitialCellConf(index);
-		confCell.isInitialCell = true;
-		confCell.animate = true;
-		this.setState({ indexInitialCell: index });
-		return confCell;
-	}
+    const handleClickCell = (index) => {
+        if (isExecuting) return;
 
-	handleFinalCell = (confCell, index) => {
-		const { indexFinalCell, maze } = this.state;
+        const [i, j] = getRowAndColIndex(index);
+        let confCell = maze[i][j];
 
-		// Remove previous final cell if exists
-		if (indexFinalCell != null) {
-			const [row, col] = this.getRowAndColIndex(indexFinalCell);
-			maze[row][col] = this.getInitialCellConf(indexFinalCell);
-			maze[row][col].isFinalCell = false;
-		}
+        if (controls.setWall) {
+            confCell = getInitialCellConf(index);
+            confCell.isWall = true;
+            confCell.animate = true;
+        } else if (controls.setInitial) {
+            confCell = handleInitialCell(confCell, index);
+        } else if (controls.setFinal) {
+            confCell = handleFinalCell(confCell, index);
+        } else if (controls.setClear) {
+            confCell = getInitialCellConf(index);
+        }
 
-		confCell = this.getInitialCellConf(index);
-		confCell.isFinalCell = true;
-		confCell.animate = true;
-		this.setState({ indexFinalCell: index });
-		return confCell;
-	}
+        mazeMemo[i][j] = { ...confCell };
+        maze[i][j] = { ...confCell };
+        setMaze([...maze]);
+    };
 
-	render() {
-		const { maze, ROW_CELLS, COL_CELLS, cellWidth, cellHeight, showGrid, message, errorMessage } = this.state;
+    const handleInitialCell = (confCell, index) => {
+        // Remove previous initial cell if exists
+        if (indexInitialCell != null) {
+            const [row, col] = getRowAndColIndex(indexInitialCell);
+            maze[row][col] = getInitialCellConf(indexInitialCell);
+            maze[row][col].isInitialCell = false;
+        }
 
-		return (
-			<div className="app">
-				<div className="wrap-githubIcon">
-					<a 
-						href="https://github.com/MiYazJE/PathfindingViewer/"
-						target="_blank"
-						alt="github repository of this proyect"
-						title="See the code!">
-							<FaGithubAlt />
-					</a>
-				</div>
-				<MazeControls 
-					createMazeDfs={this.createMazeDfs}
-					clearGrid={this.clearGrid}
-					startDijkstra={this.startingDijkstra} 
-					onClick={this.handleControls} 
-					message={message}
-					errorMessage={errorMessage}
-				/>
-				<div className="wrap-grid" ref={this.refWrapGrid}>
-					{showGrid &&
-						<Grid
-							onClick={this.handleClickCell}
-							maze={maze}
-							rowCells={ROW_CELLS}
-							colCells={COL_CELLS}
-							cellWidth={cellWidth}
-							cellHeight={cellHeight}
-							getInitialCellConf={this.getInitialCellConf}
-						/>
-					}
-				</div>
-			</div>
-		)
-	}
-}
+        confCell = getInitialCellConf(index);
+        confCell.isInitialCell = true;
+        confCell.animate = true;
+
+        setIndexInitialCell(index);
+        return confCell;
+    };
+
+    const handleFinalCell = (confCell, index) => {
+        // Remove previous final cell if exists
+        if (indexFinalCell != null) {
+            const [row, col] = getRowAndColIndex(indexFinalCell);
+            maze[row][col] = getInitialCellConf(indexFinalCell);
+            maze[row][col].isFinalCell = false;
+        }
+
+        confCell = getInitialCellConf(index);
+        confCell.isFinalCell = true;
+        confCell.animate = true;
+        setIndexFinalCell(index);
+        return confCell;
+    };
+
+    return (
+        <div className="app">
+            <div className="wrap-githubIcon">
+                <a
+                    href="https://github.com/MiYazJE/PathfindingViewer/"
+                    target="_blank"
+                    alt="github repository of this proyect"
+                    title="See the code!"
+                >
+                    <FaGithubAlt />
+                </a>
+            </div>
+            <MazeControls
+                createMazeDfs={createMazeDfs}
+                clearGrid={clearGrid}
+                startDijkstra={startingDijkstra}
+                onClick={handleControls}
+                message={message}
+                errorMessage={errorMessage}
+            />
+            <div className="wrap-grid" ref={refWrapGrid}>
+                {showGrid && (
+                    <Grid
+                        onClick={handleClickCell}
+                        maze={maze}
+                        rowCells={ROW_CELLS}
+                        colCells={COL_CELLS}
+                        cellWidth={cellWidth}
+                        cellHeight={cellHeight}
+                        getInitialCellConf={getInitialCellConf}
+                    />
+                )}
+            </div>
+            <NotificationContainer />
+        </div>
+    );
+};
 
 export default App;

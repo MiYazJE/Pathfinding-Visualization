@@ -1,20 +1,21 @@
-const PriorityQueue = require('js-priority-queue');
+import PriorityQueue from 'js-priority-queue';
 import State from '../DataStructures/State';
 
-const sleep = (time) => new Promise(res => setTimeout(res, time));
-
 export default class Dijkstra {
-
-    constructor(maze, updateMaze) {
+    constructor(maze) {
         this.maze = maze;
-        this.updateMaze = updateMaze;
+        console.log(maze[0]);
     }
 
-    async start(start, final, sleepTime) {
-
+    start(start, final) {
+        const path = new PriorityQueue({
+            strategy: PriorityQueue.ArrayStrategy,
+        });;
+        const finalState = { path };
+        
         const q = new PriorityQueue({
             comparator: (a, b) => a.weight - b.weight,
-            strategy: PriorityQueue.ArrayStrategy
+            strategy: PriorityQueue.ArrayStrategy,
         });
         const distances = new Array(this.maze.length * this.maze[0].length).fill(Number.MAX_VALUE);
         q.queue(new State(start, 0));
@@ -23,7 +24,6 @@ export default class Dijkstra {
         let found = false;
 
         while (q.length !== 0) {
-
             let current = q.dequeue();
 
             if (current.indexNode === final) {
@@ -32,19 +32,15 @@ export default class Dijkstra {
             }
 
             const [i, j] = this.getRowAndColIndex(current.indexNode);
-            if (this.maze[i][j].visited || this.maze[i][j].isWall || current.weight > this.maze[i][j].weight)
-                continue;
+            if (this.maze[i][j].visited || this.maze[i][j].isWall || current.weight > this.maze[i][j].weight) continue;
 
             this.maze[i][j].visited = true;
-            this.maze[i][j].animate = true;
-            this.updateMaze(this.maze)
-            await sleep(sleepTime)
-            this.maze[i][j].animate = false;
+            path.queue({ i, j , event: 'visited' });
 
             for (let row = -1; row <= 1; row++) {
                 for (let col = -1; col <= 1; col++) {
                     // Prevent diagonal cells to explore
-                    if (Math.abs(row + col) !== 1) continue; 
+                    if (Math.abs(row + col) !== 1) continue;
 
                     let y = i + row;
                     let x = j + col;
@@ -60,35 +56,29 @@ export default class Dijkstra {
                         this.maze[y][x].parent = this.maze[i][j];
                         distances[this.maze[y][x].index] = potentialWeight;
                     }
-
                 }
             }
-
         }
 
-        if (found) 
-            this.printPath(final, sleepTime);
-
+        finalState.found = found;
+        if (found) this.printPath(final, path);
+        return finalState;
     }
 
     getRowAndColIndex = (index) => {
-		return [parseInt(index / this.maze.length), parseInt(index % this.maze.length)];
-	}
+        return [parseInt(index / this.maze.length), parseInt(index % this.maze.length)];
+    };
 
-    printPath = async (final, sleepTime) => {
+    printPath =  (final, pathHistory) => {
+        let currentIndex = final;
 
-		let currentIndex = final;
-
-		while (true) {
-			const [i, j] = this.getRowAndColIndex(currentIndex);
+        while (true) {
+            const [i, j] = this.getRowAndColIndex(currentIndex);
             this.maze[i][j].animate = true;
             this.maze[i][j].isCamino = true;
-            this.updateMaze(this.maze);
-            await sleep(sleepTime);
-			if (this.maze[i][j].parent === null) break;
-			currentIndex = this.maze[i][j].parent.index;
-		}
-
-	}
-
+            if (this.maze[i][j].parent === null) break;
+            currentIndex = this.maze[i][j].parent.index;
+            pathHistory.queue({ i, j, event: 'backtrack' });
+        }
+    };
 }
