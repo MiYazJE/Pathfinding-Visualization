@@ -1,6 +1,7 @@
 import React from 'react';
+import TextTransition, { presets } from 'react-text-transition';
 
-const MazeControls = ({ onClick, startDijkstra, clearGrid, message, errorMessage, createMazeDfs }) => {
+const MazeControls = ({ onClick, startDijkstra, clearGrid, message, createMazeDfs }) => {
     return (
         <div className="MazeControls">
             <div className="wrap-buttons">
@@ -26,8 +27,12 @@ const MazeControls = ({ onClick, startDijkstra, clearGrid, message, errorMessage
                     Start Dikjstra
                 </button>
             </div>
-            <p className="controls-message">{message}</p>
-            <p className={`${errorMessage ? ' error-message display' : 'hide'}`}>{errorMessage}</p>
+            <TextTransition
+                className="controls-message"
+                text={message}
+                inline
+                noOverflow={true}
+            />
         </div>
     );
 };

@@ -32,7 +32,6 @@ const App = () => {
     const [controls, setControls] = useState({ ...INITIAL_CONTROLS, setInitial: true });
     const [isExecuting, setIsExecuting] = useState(false);
     const [message, setMessage] = useState('Initial cells selected');
-    const [errorMessage, setErrorMessage] = useState('');
     const [creatingMaze, setCreatingMaze] = useState(false);
     const refWrapGrid = useRef();
 
@@ -80,15 +79,17 @@ const App = () => {
 
     const startingDijkstra = async () => {
         if (indexInitialCell === null || indexFinalCell === null) {
-            setErrorMessage(
-                'Can not start dijkstra without initial and final cells not being established! \nPlease set them and try again.'
+            NotificationManager.error(
+				'',
+				`Can not start dijkstra without initial and final cells not being established!
+				Please set them and try again.`,
+				10000
             );
-            setTimeout(() => setErrorMessage(null), 10000);
             return;
         }
 
-        setIsExecuting(true);
-        setErrorMessage(null);
+		NotificationManager.info('', 'Starting dikjstra algorithm...');
+		setIsExecuting(true);
 
         const { path, found } = new Dijkstra(mazeMemo).start(indexInitialCell, indexFinalCell);
 		await animatePath(path, SLEEP_TIME);
@@ -115,11 +116,11 @@ const App = () => {
 		}
 	}
 
-    const animateDijkstra = async (path) => {
-    };
-
     const clearGrid = () => {
-        if (isExecuting) return;
+        if (isExecuting || creatingMaze) {
+			NotificationManager.error('', 'Can not do this right now.');
+			return;
+		} 
 
         for (let i = 0; i < maze.length; i++) {
             for (let j = 0; j < maze[i].length; j++) {
@@ -177,7 +178,7 @@ const App = () => {
     };
 
     const handleClickCell = (index) => {
-        if (isExecuting) return;
+        if (isExecuting || creatingMaze) return;
 
         const [i, j] = getRowAndColIndex(index);
         let confCell = maze[i][j];
@@ -248,7 +249,6 @@ const App = () => {
                 startDijkstra={startingDijkstra}
                 onClick={handleControls}
                 message={message}
-                errorMessage={errorMessage}
             />
             <div className="wrap-grid" ref={refWrapGrid}>
                 {showGrid && (
