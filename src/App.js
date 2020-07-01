@@ -83,7 +83,7 @@ const App = () => {
         
 		console.log(mazeMemo)
 		const path = creator.makeMazeDfs();
-		await animatePath(path, SLEEP_TIME);
+		await animatePath(path, 10);
         toast.success('🚀 Maze created!');
         setCreatingMaze(false);
     };
