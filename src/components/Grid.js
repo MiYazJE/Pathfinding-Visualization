@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useEffect, useState } from 'react';
 import Cell from './Cell';
 
-const Grid = ({
+const Grid = forwardRef(({
     colCells,
     rowCells,
     maze,
     onClick,
-    cellHeight,
     cellWidth
-}) => {
+}, ref) => {
     const [mouseDown, setMouseDown] = useState(false);
+    const [gridSize, setGridSize] = useState('');
+
+    useEffect(() => {
+        setGridSize(`repeat(${rowCells}, ${cellWidth}px)`);
+    }, []);
 
     const createGridComponent = () => {
         const gridComponent = [];
@@ -50,18 +54,24 @@ const Grid = ({
         setMouseDown(false);
     };
 
+    useImperativeHandle(ref, () => ({
+        resize: (size) => {
+            setGridSize(`repeat(${rowCells}, ${size}px)`);
+        }
+    }));
+
     return (
         <div
             style={{
                 display: 'grid',
-                gridTemplateRows: `repeat(${rowCells}, ${cellWidth}px)`,
-                gridTemplateColumns: `repeat(${colCells}, ${cellHeight}px)`,
+                gridTemplateRows: gridSize,
+                gridTemplateColumns: gridSize,
             }}
             className="Grid"
         >
             {maze && createGridComponent()}
         </div>
     );
-};
+});
 
 export default Grid;

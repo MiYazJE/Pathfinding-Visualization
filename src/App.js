@@ -5,11 +5,12 @@ import { FaGithubAlt } from 'react-icons/fa';
 import './App.css';
 import MazeCreator from './Algorithms/MazeCreator';
 import Dijkstra from './Algorithms/Dijkstra';
-import { NotificationContainer, NotificationManager } from 'react-notifications';
-import 'react-notifications/lib/notifications.css';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import ResizeObserver from 'resize-observer-polyfill';
 
-const ROW_CELLS = 21;
-const COL_CELLS = 21;
+let ROW_CELLS = 21;
+let COL_CELLS = 21;
 const SLEEP_TIME = 60;
 const mazeMemo = [];
 
@@ -23,7 +24,6 @@ const INITIAL_CONTROLS = {
 const sleep = (time) => new Promise((res) => setTimeout(res, time));
 
 const App = () => {
-    const [showGrid, setShowGrid] = useState(false);
     const [cellHeight, setCellHeight] = useState(null);
     const [cellWidth, setCellWidth] = useState(null);
     const [indexInitialCell, setIndexInitialCell] = useState(null);
@@ -33,15 +33,25 @@ const App = () => {
     const [isExecuting, setIsExecuting] = useState(false);
     const [message, setMessage] = useState('Initial cells selected');
     const [creatingMaze, setCreatingMaze] = useState(false);
-    const refWrapGrid = useRef();
+	const refWrapGrid = useRef();
+	const gridRef = useRef();
 
     useEffect(() => {
-        const { clientHeight } = refWrapGrid.current;
-        setCellWidth((clientHeight * 0.9) / ROW_CELLS);
-        setCellHeight((clientHeight * 0.9) / COL_CELLS);
-        setShowGrid(true);
+		const { height, width } = refWrapGrid.current.getBoundingClientRect();
+        setCellWidth(Math.min(width * 0.9, height * 0.9) / ROW_CELLS);
+        setCellHeight(Math.min(width * 0.9, height * 0.9) / COL_CELLS);
         initMaze();
     }, []);
+
+	useEffect(() => {
+		const observer = new ResizeObserver((entries, observer) => {
+			const { width, height } = entries[0].contentRect;
+			gridRef.current.resize(Math.min(Math.min(width * 0.9, height * 0.9) / ROW_CELLS	));
+        });
+        observer.observe(refWrapGrid.current);
+
+        return () => observer.unobserve(refWrapGrid.current);
+	}, []);
 
     const initMaze = () => {
         const initialMaze = [];
@@ -64,37 +74,36 @@ const App = () => {
 
     const createMazeDfs = async () => {
         if (creatingMaze) {
-            NotificationManager.error('Error message', 'You already start a maze creation!', 5000);
+            toast.error('You already start a maze creation!');
             return;
         }
         setCreatingMaze(true);
-        clearGrid();
+		clearGrid();
         const creator = new MazeCreator(mazeMemo, getRowAndColIndex);
 
-        const path = creator.makeMaze();
+		console.log(mazeMemo)
+		const path = creator.makeMaze();
 		await animatePath(path, 1);
-        NotificationManager.success('Maze created!');
+        toast.success('🚀 Maze created!');
         setCreatingMaze(false);
     };
 
     const startingDijkstra = async () => {
         if (indexInitialCell === null || indexFinalCell === null) {
-            NotificationManager.error(
-				'',
+            toast.error(
 				`Can not start dijkstra without initial and final cells not being established!
 				Please set them and try again.`,
-				10000
             );
             return;
         }
 
-		NotificationManager.info('', 'Starting dikjstra algorithm...');
+		toast.info('Starting dikjstra algorithm...');
 		setIsExecuting(true);
 
         const { path, found } = new Dijkstra(mazeMemo).start(indexInitialCell, indexFinalCell);
 		await animatePath(path, SLEEP_TIME);
-		if (found) NotificationManager.success('The maze has been resolved!');
-		else NotificationManager.error('The maze has not been resolved!');
+		if (found) toast.success('🚀 The maze has been resolved!');
+		else toast.error('The maze has not been resolved!');
         setIsExecuting(false);
     };
 
@@ -118,7 +127,7 @@ const App = () => {
 
     const clearGrid = () => {
         if (isExecuting || creatingMaze) {
-			NotificationManager.error('', 'Can not do this right now.');
+			toast.error('Can not do this right now.');
 			return;
 		} 
 
@@ -251,8 +260,9 @@ const App = () => {
                 message={message}
             />
             <div className="wrap-grid" ref={refWrapGrid}>
-                {showGrid && (
+                {maze.length && (
                     <Grid
+						ref={gridRef}
                         onClick={handleClickCell}
                         maze={maze}
                         rowCells={ROW_CELLS}
@@ -263,7 +273,7 @@ const App = () => {
                     />
                 )}
             </div>
-            <NotificationContainer />
+            <ToastContainer style={{fontSize: '15px'}} position="bottom-right" />
         </div>
     );
 };

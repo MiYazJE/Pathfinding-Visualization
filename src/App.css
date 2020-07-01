@@ -89,14 +89,10 @@
 }
 
 .wrap-buttons {
-    width: 100%;
+    width: 80%;
     display: flex;
-    align-items: center;
     justify-content: center;
-}
-
-.wrap-buttons * {
-    margin: 0px 10px;
+    flex-wrap: wrap;
 }
 
 .controls-message {
@@ -134,6 +130,7 @@
     font-size: 15px;
     padding: 1rem;
     transition: background-color .4s ease-in-out;
+    margin: 5px;
 }
 
 .btnControls:hover {
