@@ -136,9 +136,7 @@ const App = () => {
                 maze[i][j].isWall = false;
             }
 
-            // if () {
-
-            // }
+            maze[i][j].current = current;
             setMaze([...maze]);
             if (!fastSleep) await sleep(timeSleep);
 		}

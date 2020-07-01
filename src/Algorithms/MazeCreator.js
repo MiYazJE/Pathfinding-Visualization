@@ -17,11 +17,10 @@ export default class MazeCreator {
 
     makeMazeBacktracking = () => {
         const stack = [];
-        const directionsI = [-2, 2, 0, 0]; 
-        const directionsJ = [0, 0, 2, -2]; 
-        const sumI = [-1, 1, 0, 0];
-        const sumJ = [0, 0, 1, -1];
-
+        const directionsI = [-2, 2, 0, 0];
+        const directionsJ = [0, 0, 2, -2];
+        const midSumI = [-1, 1, 0, 0];
+        const midSumJ = [0, 0, 1, -1];
 
         for (let i = 0; i < this.maze.length; i++) {
             for (let j = 0; j < this.maze[i].length; j++) {
@@ -34,7 +33,7 @@ export default class MazeCreator {
         let startJ = 2;
         while (startI % 2 === 0 && startI > 0)
             startI = parseInt(Math.random() * (this.dim - 1));
-        while (startJ % 2 === 0 && startJ > 0) 
+        while (startJ % 2 === 0 && startJ > 0)
             startJ = parseInt(Math.random() * (this.dim - 1));
         stack.push({ i: startI, j: startJ });
         this.path.queue({ i: startI, j: startJ, event: OPEN_EVENT });
@@ -42,19 +41,32 @@ export default class MazeCreator {
 
         while (stack.length !== 0) {
             const neighbors = [];
+            const removeCurrentNodes = [];
             const { i, j } = stack.pop();
-            
+
             for (let index = 0; index < 4; index++) {
                 const newI = i + directionsI[index];
                 const newJ = j + directionsJ[index];
-                const midI = i + sumI[index];
-                const midJ = j + sumJ[index];
+                const midI = i + midSumI[index];
+                const midJ = j + midSumJ[index];
                 if (this.validNeighbor(newI, newJ, midI, midJ)) {
                     neighbors.push({ i: newI, j: newJ });
                     this.maze[newI][newJ].isWall = false;
                     this.maze[midI][midJ].isWall = false;
-                    this.path.queue({ i: midI, j: midJ, event: OPEN_EVENT, current: true });
-                    this.path.queue({ i: newI, j: newJ, event: OPEN_EVENT, current: true });
+                    this.path.queue({
+                        i: midI,
+                        j: midJ,
+                        event: OPEN_EVENT,
+                        current: true,
+                    });
+                    this.path.queue({
+                        i: newI,
+                        j: newJ,
+                        event: OPEN_EVENT,
+                        current: true,
+                    });
+                    removeCurrentNodes.push({ i: midI, j: midJ });
+                    removeCurrentNodes.push({ i: newI, j: newJ });
                     this.setVisited(newI, newJ);
                     this.setVisited(midI, midJ);
                 }
@@ -67,9 +79,12 @@ export default class MazeCreator {
                     if (index !== randomIndex) {
                         stack.push({ ...neighbor });
                     }
-                }); 
+                });
 
                 stack.push({ ...neighbors[randomIndex] });
+                removeCurrentNodes.forEach((current) =>
+                    this.path.queue({ ...current, event: OPEN_EVENT }),
+                );
             }
         }
 

@@ -11,13 +11,15 @@ const Cell = ({
     onMouseMove,
     index,
     animate,
+    current,
 }) => {
     const getClassName = () => {
         if (isInitialCell) return 'initialCell';
-        if (isFinalCell) return 'finalCell';
-        if (isBacktrack) return 'backtrack';
-        if (isWall) return 'wall';
-        if (visited) return 'visited';
+        if (isFinalCell)   return 'finalCell';
+        if (isBacktrack)   return 'backtrack';
+        if (isWall)        return 'wall';
+        if (visited)       return 'visited';
+        if (current)       return 'current';
         return 'white';
     };
 
