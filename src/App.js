@@ -83,7 +83,7 @@ const App = () => {
         
 		console.log(mazeMemo)
 		const path = creator.makeMazeDfs();
-		await animatePath(path, 1);
+		await animatePath(path, SLEEP_TIME);
         toast.success('🚀 Maze created!');
         setCreatingMaze(false);
     };
@@ -98,7 +98,7 @@ const App = () => {
         setCreatingMaze(true);
         const creator = new MazeCreator(mazeMemo);
         const path = creator.makeMazeBacktracking();
-        await animatePath(path, 1);
+        await animatePath(path, SLEEP_TIME);
         toast.success('🚀 Maze created!');
         setCreatingMaze(false);
     }
@@ -124,7 +124,7 @@ const App = () => {
 
 	const animatePath = async (path, timeSleep = SLEEP_TIME) => {
 		while (path.length !== 0) {
-			const { i, j, event, fastSleep } = path.dequeue();
+			const { i, j, event, fastSleep, current } = path.dequeue();
 			if (event === 'visited') {
 				maze[i][j].visited = true;
 			} else if (event === 'backtrack') {
@@ -135,6 +135,10 @@ const App = () => {
             } else if (event === 'open') {
                 maze[i][j].isWall = false;
             }
+
+            // if () {
+
+            // }
             setMaze([...maze]);
             if (!fastSleep) await sleep(timeSleep);
 		}

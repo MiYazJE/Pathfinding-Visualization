@@ -53,8 +53,8 @@ export default class MazeCreator {
                     neighbors.push({ i: newI, j: newJ });
                     this.maze[newI][newJ].isWall = false;
                     this.maze[midI][midJ].isWall = false;
-                    this.path.queue({ i: midI, j: midJ, event: OPEN_EVENT });
-                    this.path.queue({ i: newI, j: newJ, event: OPEN_EVENT });
+                    this.path.queue({ i: midI, j: midJ, event: OPEN_EVENT, current: true });
+                    this.path.queue({ i: newI, j: newJ, event: OPEN_EVENT, current: true });
                     this.setVisited(newI, newJ);
                     this.setVisited(midI, midJ);
                 }

@@ -22,8 +22,11 @@
 }
 
 .Cell {
-    border: 0.1px solid black;
     cursor: pointer;
+}
+
+.current {
+    background-color: rgb(167, 32, 32);
 }
 
 .cellStart {
