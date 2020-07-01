@@ -80,13 +80,28 @@ const App = () => {
         setCreatingMaze(true);
 		clearGrid();
         const creator = new MazeCreator(mazeMemo, getRowAndColIndex);
-
+        
 		console.log(mazeMemo)
-		const path = creator.makeMaze();
+		const path = creator.makeMazeDfs();
 		await animatePath(path, 1);
         toast.success('🚀 Maze created!');
         setCreatingMaze(false);
     };
+    
+    const createMazeBacktracking = async () => {
+        if (creatingMaze) {
+            toast.error('You already start a maze creation!');
+            return
+        }
+
+        clearGrid();
+        setCreatingMaze(true);
+        const creator = new MazeCreator(mazeMemo);
+        const path = creator.makeMazeBacktracking();
+        await animatePath(path, 1);
+        toast.success('🚀 Maze created!');
+        setCreatingMaze(false);
+    }
 
     const startingDijkstra = async () => {
         if (indexInitialCell === null || indexFinalCell === null) {
@@ -109,7 +124,7 @@ const App = () => {
 
 	const animatePath = async (path, timeSleep = SLEEP_TIME) => {
 		while (path.length !== 0) {
-			const { i, j, event } = path.dequeue();
+			const { i, j, event, fastSleep } = path.dequeue();
 			if (event === 'visited') {
 				maze[i][j].visited = true;
 			} else if (event === 'backtrack') {
@@ -120,8 +135,8 @@ const App = () => {
             } else if (event === 'open') {
                 maze[i][j].isWall = false;
             }
-			setMaze([...maze]);
-			await sleep(timeSleep);
+            setMaze([...maze]);
+            if (!fastSleep) await sleep(timeSleep);
 		}
 	}
 
@@ -254,6 +269,7 @@ const App = () => {
             </div>
             <MazeControls
                 createMazeDfs={createMazeDfs}
+                createMazeBacktracking={createMazeBacktracking}
                 clearGrid={clearGrid}
                 startDijkstra={startingDijkstra}
                 onClick={handleControls}
