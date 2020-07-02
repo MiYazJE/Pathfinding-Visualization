@@ -30,15 +30,23 @@ export default class MazeCreator {
 
         let startI = 2;
         let startJ = 2;
-        while (startI % 2 === 0) startI = parseInt(Math.random() * (this.dim - 1));
-        while (startJ % 2 === 0) startJ = parseInt(Math.random() * (this.maze[0].length - 1));
-        stack.push({ i: startI, j: startJ });
+        while (startI % 2 === 0)
+            startI = parseInt(Math.random() * (this.dim - 1));
+        while (startJ % 2 === 0)
+            startJ = parseInt(Math.random() * (this.maze[0].length - 1));
+        stack.push({ current: { i: startI, j: startJ }});
         this.path.queue({ i: startI, j: startJ, event: OPEN_EVENT });
         this.setVisited(startI, startJ);
 
         while (stack.length !== 0) {
             const neighbors = [];
-            const { i, j } = stack.pop();
+            const {
+                current: { i, j },
+                mid,
+            } = stack.pop();
+
+            if (mid) this.path.queue({ i: mid.i, j: mid.j, event: OPEN_EVENT });
+            this.path.queue({ i, j, event: OPEN_EVENT });
 
             for (let index = 0; index < 4; index++) {
                 const newI = i + directionsI[index];
@@ -46,25 +54,12 @@ export default class MazeCreator {
                 const midI = i + midSumI[index];
                 const midJ = j + midSumJ[index];
                 if (this.validNeighbor(newI, newJ, midI, midJ)) {
-                    neighbors.push({ i: newI, j: newJ });
+                    neighbors.push({
+                        current: { i: newI, j: newJ },
+                        mid: { i: midI, j: midJ },
+                    });
                     this.maze[newI][newJ].isWall = false;
                     this.maze[midI][midJ].isWall = false;
-                    const midObject = {
-                        i: midI,
-                        j: midJ,
-                        event: OPEN_EVENT,
-                        current: true,
-                    }; 
-                    const newObject = {
-                        i: newI,
-                        j: newJ,
-                        event: OPEN_EVENT,
-                        current: true,
-                    };
-                    this.path.queue({ ...midObject });
-                    this.path.queue({ ...midObject, current: false});
-                    this.path.queue({ ...newObject });
-                    this.path.queue({ ...newObject, current: false });
                     this.setVisited(newI, newJ);
                 }
             }
@@ -86,7 +81,7 @@ export default class MazeCreator {
     };
 
     setVisited = (i, j) => {
-        this.visitedPath.set(i * this.dim + j, true);
+        this.visitedPath.set(i * this.maze[0].length + j, true);
     };
 
     validNeighbor = (i, j, midI, midJ) => {
@@ -95,8 +90,8 @@ export default class MazeCreator {
             j > 0 &&
             i < this.maze.length - 1 &&
             j < this.maze[i].length - 1 &&
-            !this.visitedPath.has(i * this.maze.length + j) &&
-            !this.visitedPath.has(midI * this.maze.length + midJ)
+            !this.visitedPath.has(i * this.maze[0].length + j) &&
+            !this.visitedPath.has(midI * this.maze[0].length + midJ)
         );
     };
 
@@ -123,7 +118,7 @@ export default class MazeCreator {
                 }
             }
         }
-            
+
         nodesToExplore.sort(() => Math.random() - 0.5);
         nodesToExplore.forEach(({ i, j }) => this.tearDown(i, j));
 
@@ -139,18 +134,37 @@ export default class MazeCreator {
 
     addToPath = (i, j, event, fastSleep) => {
         const index = i * this.maze[0].length + j;
-        if (!this.visitedPath.has(index) || this.visitedPath.get(index).event !== event) {
+        if (
+            !this.visitedPath.has(index) ||
+            this.visitedPath.get(index).event !== event
+        ) {
             this.path.queue({ i, j, event, fastSleep });
             this.visitedPath.set(index, { event });
         }
     };
 
     tearDown(row, col) {
-        if (row % 2 !== 0 && this.maze[row][col - 1].value !== this.maze[row][col + 1].value) {
-            this.fill(row, col - 1, this.maze[row][col - 1].value, this.maze[row][col + 1].value);
+        if (
+            row % 2 !== 0 &&
+            this.maze[row][col - 1].value !== this.maze[row][col + 1].value
+        ) {
+            this.fill(
+                row,
+                col - 1,
+                this.maze[row][col - 1].value,
+                this.maze[row][col + 1].value,
+            );
             this.maze[row][col].value = this.maze[row][col + 1].value;
-        } else if (row % 2 == 0 && this.maze[row - 1][col].value !== this.maze[row + 1][col].value) {
-            this.fill(row - 1, col, this.maze[row - 1][col].value, this.maze[row + 1][col].value);
+        } else if (
+            row % 2 == 0 &&
+            this.maze[row - 1][col].value !== this.maze[row + 1][col].value
+        ) {
+            this.fill(
+                row - 1,
+                col,
+                this.maze[row - 1][col].value,
+                this.maze[row + 1][col].value,
+            );
             this.maze[row][col].value = this.maze[row + 1][col].value;
         }
     }
