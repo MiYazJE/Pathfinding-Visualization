@@ -100,32 +100,25 @@ export default class MazeCreator {
         );
     };
 
-    getIndex(index) {
-        return [parseInt(index / this.maze.length), parseInt(index % this.maze[0].length)];
-    };
-
     makeMazeDfs = () => {
-        let i, j;
         let emptyCt = 0;
         const nodesToExplore = [];
 
-        console.log(this.maze.length, this.maze[0].length);
-
-        for (i = 0; i < this.maze.length; i++)
-            for (j = 0; j < this.maze[i].length; j++) {
+        for (let i = 0; i < this.maze.length; i++)
+            for (let j = 0; j < this.maze[i].length; j++) {
                 this.maze[i][j].value = WALL;
                 this.maze[i][j].isWall = true;
                 this.addToPath(i, j, WALL_EVENT, true);
             }
 
-        for (i = 1; i < this.maze.length - 1; i += 2) {
-            for (j = 1; j < this.maze[i].length - 1; j += 2) {
+        for (let i = 1; i < this.maze.length - 1; i += 2) {
+            for (let j = 1; j < this.maze[i].length - 1; j += 2) {
                 emptyCt++;
                 this.maze[i][j].value = -emptyCt;
                 if (i < this.maze.length - 2) {
                     nodesToExplore.push({ i: i + 1, j });
                 }
-                if (j < this.maze[i].length - 2) {
+                if (j < this.maze[0].length - 2) {
                     nodesToExplore.push({ i, j: j + 1 });
                 }
             }
@@ -134,8 +127,8 @@ export default class MazeCreator {
         nodesToExplore.sort(() => Math.random() - 0.5);
         nodesToExplore.forEach(({ i, j }) => this.tearDown(i, j));
 
-        for (i = 1; i < this.maze.length - 1; i++)
-            for (j = 1; j < this.maze[i].length - 1; j++)
+        for (let i = 1; i < this.maze.length - 1; i++)
+            for (let j = 1; j < this.maze[i].length - 1; j++)
                 if (this.maze[i][j].value < 0) {
                     this.addToPath(i, j, OPEN_EVENT);
                     this.maze[i][j].isWall = false;
@@ -145,7 +138,7 @@ export default class MazeCreator {
     };
 
     addToPath = (i, j, event, fastSleep) => {
-        const index = i * this.maze.length + j;
+        const index = i * this.maze[0].length + j;
         if (!this.visitedPath.has(index) || this.visitedPath.get(index).event !== event) {
             this.path.queue({ i, j, event, fastSleep });
             this.visitedPath.set(index, { event });

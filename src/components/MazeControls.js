@@ -1,42 +1,107 @@
 import React from 'react';
 import TextTransition from 'react-text-transition';
+import { Button, Menu, Dropdown } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
+import 'antd/dist/antd.css';
 
 const MazeControls = ({
-    onClick,
+    changeControls,
     startDijkstra,
     clearGrid,
     message,
     createMazeDfs,
     createMazeBacktracking,
 }) => {
+    const menuMazeGenerator = (
+        <Menu>
+            <Menu.Item className="btnControls" onClick={createMazeDfs} key="1">
+                Random
+            </Menu.Item>
+            <Menu.Item
+                className="btnControls"
+                onClick={createMazeBacktracking}
+                key="2"
+            >
+                Backtracking
+            </Menu.Item>
+        </Menu>
+    );
+
+    const menuMazeControls = (
+        <Menu>
+            <Menu.Item
+                className="btnControls"
+                onClick={() => changeControls('initial')}
+                key="1"
+            >
+                Set initial
+            </Menu.Item>
+            <Menu.Item
+                className="btnControls"
+                onClick={() => changeControls('final')}
+                key="2"
+            >
+                Set final
+            </Menu.Item>
+            <Menu.Item
+                className="btnControls"
+                onClick={() => changeControls('wall')}
+                key="3"
+            >
+                Set wall
+            </Menu.Item>
+            <Menu.Item
+                className="btnControls"
+                onClick={() => changeControls('clear')}
+                key="4"
+            >
+                Set clear
+            </Menu.Item>
+            <Menu.Item className="btnControls" onClick={clearGrid} key="5">
+                Clear grid
+            </Menu.Item>
+        </Menu>
+    );
+
     return (
         <div className="MazeControls">
             <div className="wrap-buttons">
-                <button
+                <Dropdown className="btnControls" overlay={menuMazeControls}>
+                    <Button>
+                        Maze Controls <DownOutlined />
+                    </Button>
+                </Dropdown>
+
+                {/* <Button
                     className="btnControls"
                     onClick={() => onClick('initial')}
                 >
                     Set Initial
-                </button>
-                <button
+                </Button>
+                <Button
                     className="btnControls"
                     onClick={() => onClick('final')}
                 >
                     Set Final
-                </button>
-                <button className="btnControls" onClick={() => onClick('wall')}>
+                </Button>
+                <Button className="btnControls" onClick={() => onClick('wall')}>
                     Set Walls
-                </button>
-                <button
+                </Button>
+                <Button
                     className="btnControls"
                     onClick={() => onClick('clear')}
                 >
                     Clear cell
-                </button>
-                <button className="btnControls" onClick={clearGrid}>
+                </Button>
+                <Button className="btnControls" onClick={clearGrid}>
                     Clear grid
-                </button>
-                <button className="btnControls" onClick={createMazeDfs}>
+                </Button> */}
+                <Dropdown className="btnControls" overlay={menuMazeGenerator}>
+                    <Button>
+                        Maze Generator <DownOutlined />
+                    </Button>
+                </Dropdown>
+                {/* <button className="btnControls" onClick={createMazeDfs}>
                     Create maze Random
                 </button>
                 <button
@@ -44,10 +109,10 @@ const MazeControls = ({
                     onClick={createMazeBacktracking}
                 >
                     Create maze Backtracking
-                </button>
-                <button className="btnDijkstra" onClick={startDijkstra}>
+                </button> */}
+                <Button className="btnDijkstra" onClick={startDijkstra}>
                     Start Dikjstra
-                </button>
+                </Button>
             </div>
             <TextTransition
                 className="controls-message"

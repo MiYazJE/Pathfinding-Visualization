@@ -9,7 +9,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ResizeObserver from 'resize-observer-polyfill';
 
-const SLEEP_TIME = 60;
+const SLEEP_TIME = 30;
 const mazeMemo = [];
 let colCells;
 let rowCells;
@@ -93,7 +93,6 @@ const App = () => {
         clearGrid();
         const creator = new MazeCreator(mazeMemo);
 
-        console.log(mazeMemo);
         const path = creator.makeMazeDfs();
         await animatePath(path, 10);
         toast.success('🚀 Maze created!');
@@ -164,8 +163,8 @@ const App = () => {
 
         for (let i = 0; i < maze.length; i++) {
             for (let j = 0; j < maze[i].length; j++) {
-                maze[i][j] = { ...INITIAL_CELL_CONF };
-                mazeMemo[i][j] = { ...INITIAL_CELL_CONF };
+                maze[i][j] = { ...maze[i][j], ...INITIAL_CELL_CONF };
+                mazeMemo[i][j] = { ...maze[i][j], ...INITIAL_CELL_CONF };
             }
         }
 
@@ -266,7 +265,7 @@ const App = () => {
                 createMazeBacktracking={createMazeBacktracking}
                 clearGrid={clearGrid}
                 startDijkstra={startDijkstra}
-                onClick={handleControls}
+                changeControls={handleControls}
                 message={message}
             />
             <div className="wrap-grid" ref={refWrapGrid}>

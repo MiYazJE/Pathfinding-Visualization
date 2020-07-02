@@ -9,6 +9,7 @@
     width: 100%;
     min-height: 100vh;
     height: 100vh;
+    min-height: 400px;
     display: flex;
     align-items: flex-start;
 }
@@ -127,13 +128,14 @@
     cursor: pointer;
     border-radius: 5px;
     font-size: 15px;
-    padding: 1rem;
+    /* padding: 1rem; */
     transition: background-color .4s ease-in-out;
     margin: 5px;
 }
 
 .btnControls:hover {
     background-color: #d64161;
+    color: white;
 }
 
 .btnDijkstra {
@@ -144,9 +146,9 @@
     outline: none;
     cursor: pointer;
     border-radius: 5px;
-    padding: 1rem;
     transition: all .4s ease-in-out;
     color: white;
+    margin: 5px;
 } 
 
 .btnDijkstra:hover {
@@ -192,4 +194,10 @@
 
 .wrap-githubIcon svg:active {
     transform: translateY(3px);
+}
+
+@media (max-width: 500px) {
+    .btnControls {
+        padding: 5px;
+    }
 }

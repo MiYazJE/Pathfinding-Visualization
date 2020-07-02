@@ -13,7 +13,6 @@ const Grid = forwardRef(
         const [gridTemplateColumns, setGridTemplateColumns] = useState('');
 
         useEffect(() => {
-            console.log(rowCells, colCells, cellWidth);
             setGridTemplateRows(
                 `repeat(${parseInt(rowCells)}, ${cellWidth}px)`,
             );
