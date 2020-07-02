@@ -59,7 +59,7 @@ export default class Dijkstra {
                     )
                         continue;
 
-                    let indexAdyacentCell = y * this.maze.length + x;
+                    let indexAdyacentCell = y * this.maze[0].length + x;
                     let potentialWeight =
                         current.weight + this.maze[y][x].weight + 1;
                     if (potentialWeight < distances[indexAdyacentCell]) {
@@ -76,13 +76,6 @@ export default class Dijkstra {
         return { path, found };
     }
 
-    getRowAndColIndex = (index) => {
-        return [
-            parseInt(index / this.maze.length),
-            parseInt(index % this.maze.length),
-        ];
-    };
-
     printPath = (currentCordinates, pathHistory) => {
         while (true) {
             const [i, j] = currentCordinates;
@@ -90,7 +83,7 @@ export default class Dijkstra {
             this.maze[i][j].isCamino = true;
             if (this.maze[i][j].parent === null) break;
             currentCordinates = this.maze[i][j].parent.cordinates;
-            console.log(i, j, currentCordinates)
+            console.log(i, j, currentCordinates);
             pathHistory.queue({ i, j, event: 'backtrack' });
         }
     };
