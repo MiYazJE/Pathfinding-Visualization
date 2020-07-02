@@ -1,5 +1,5 @@
 import React from 'react';
-import TextTransition, { presets } from 'react-text-transition';
+import TextTransition from 'react-text-transition';
 
 const MazeControls = ({
     onClick,

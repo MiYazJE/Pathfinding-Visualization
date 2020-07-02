@@ -31,17 +31,14 @@ export default class MazeCreator {
 
         let startI = 2;
         let startJ = 2;
-        while (startI % 2 === 0 && startI > 0)
-            startI = parseInt(Math.random() * (this.dim - 1));
-        while (startJ % 2 === 0 && startJ > 0)
-            startJ = parseInt(Math.random() * (this.dim - 1));
+        while (startI % 2 === 0 && startI > 0) startI = parseInt(Math.random() * (this.dim - 1));
+        while (startJ % 2 === 0 && startJ > 0) startJ = parseInt(Math.random() * (this.dim - 1));
         stack.push({ i: startI, j: startJ });
         this.path.queue({ i: startI, j: startJ, event: OPEN_EVENT });
         this.setVisited(startI, startJ);
 
         while (stack.length !== 0) {
             const neighbors = [];
-            const removeCurrentNodes = [];
             const { i, j } = stack.pop();
 
             for (let index = 0; index < 4; index++) {
@@ -53,22 +50,23 @@ export default class MazeCreator {
                     neighbors.push({ i: newI, j: newJ });
                     this.maze[newI][newJ].isWall = false;
                     this.maze[midI][midJ].isWall = false;
-                    this.path.queue({
+                    const midObject = {
                         i: midI,
                         j: midJ,
                         event: OPEN_EVENT,
                         current: true,
-                    });
-                    this.path.queue({
+                    }; 
+                    const newObject = {
                         i: newI,
                         j: newJ,
                         event: OPEN_EVENT,
                         current: true,
-                    });
-                    removeCurrentNodes.push({ i: midI, j: midJ });
-                    removeCurrentNodes.push({ i: newI, j: newJ });
+                    };
+                    this.path.queue({ ...midObject });
+                    this.path.queue({ ...midObject, current: false});
+                    this.path.queue({ ...newObject });
+                    this.path.queue({ ...newObject, current: false });
                     this.setVisited(newI, newJ);
-                    this.setVisited(midI, midJ);
                 }
             }
 
@@ -82,9 +80,6 @@ export default class MazeCreator {
                 });
 
                 stack.push({ ...neighbors[randomIndex] });
-                removeCurrentNodes.forEach((current) =>
-                    this.path.queue({ ...current, event: OPEN_EVENT }),
-                );
             }
         }
 
@@ -109,16 +104,13 @@ export default class MazeCreator {
     makeMazeDfs = () => {
         let i, j;
         let emptyCt = 0;
-        let wallCt = 0;
-
-        const wallrow = new Array(Math.floor((this.dim * this.dim) / 2));
-        const wallcol = new Array(Math.floor((this.dim * this.dim) / 2));
+        const nodesToExplore = [];
 
         for (i = 0; i < this.dim; i++)
             for (j = 0; j < this.dim; j++) {
                 this.maze[i][j].value = WALL;
                 this.maze[i][j].isWall = true;
-                this.addToPath(i, j, WALL_EVENT);
+                this.addToPath(i, j, WALL_EVENT, true);
             }
 
         for (i = 1; i < this.dim - 1; i += 2) {
@@ -126,73 +118,42 @@ export default class MazeCreator {
                 emptyCt++;
                 this.maze[i][j].value = -emptyCt;
                 if (i < this.dim - 2) {
-                    wallrow[wallCt] = i + 1;
-                    wallcol[wallCt++] = j;
+                    nodesToExplore.push({ i: i + 1, j });
                 }
                 if (j < this.dim - 2) {
-                    wallrow[wallCt] = i;
-                    wallcol[wallCt++] = j + 1;
+                    nodesToExplore.push({ i, j: j + 1 });
                 }
             }
         }
+            
+        nodesToExplore.sort(() => Math.random() - 0.5);
+        nodesToExplore.forEach(({ i, j }) => this.tearDown(i, j));
 
-        let r;
-        for (i = wallCt - 1; i > 0; i--) {
-            r = Math.floor(Math.random() * i);
-            this.tearDown(wallrow[r], wallcol[r]);
-            wallrow[r] = wallrow[i];
-            wallcol[r] = wallcol[i];
-        }
-
-        // Reemplazar valores negativos por casillas abiertas
         for (i = 1; i < this.dim - 1; i++)
             for (j = 1; j < this.dim - 1; j++)
                 if (this.maze[i][j].value < 0) {
-                    if (this.maze[i][j].isWall) {
-                        this.addToPath(i, j, OPEN_EVENT);
-                    }
+                    this.addToPath(i, j, OPEN_EVENT);
                     this.maze[i][j].isWall = false;
                 }
 
         return this.path;
     };
 
-    addToPath = (i, j, event) => {
+    addToPath = (i, j, event, fastSleep) => {
         const index = i * this.maze.length + j;
-        if (
-            !this.visitedPath.has(index) ||
-            this.visitedPath.get(index).event !== event
-        ) {
-            this.path.queue({ i, j, event });
+        if (!this.visitedPath.has(index) || this.visitedPath.get(index).event !== event) {
+            this.path.queue({ i, j, event, fastSleep });
             this.visitedPath.set(index, { event });
         }
     };
 
     tearDown(row, col, path) {
-        if (
-            row % 2 !== 0 &&
-            this.maze[row][col - 1].value !== this.maze[row][col + 1].value
-        ) {
-            this.fill(
-                row,
-                col - 1,
-                this.maze[row][col - 1].value,
-                this.maze[row][col + 1].value,
-            );
+        if (row % 2 !== 0 && this.maze[row][col - 1].value !== this.maze[row][col + 1].value) {
+            this.fill(row, col - 1, this.maze[row][col - 1].value, this.maze[row][col + 1].value);
             this.maze[row][col].value = this.maze[row][col + 1].value;
-            this.maze[row][col].isWall = this.maze[row][col].isWall;
-        } else if (
-            row % 2 == 0 &&
-            this.maze[row - 1][col].value !== this.maze[row + 1][col].value
-        ) {
-            this.fill(
-                row - 1,
-                col,
-                this.maze[row - 1][col].value,
-                this.maze[row + 1][col].value,
-            );
+        } else if (row % 2 == 0 && this.maze[row - 1][col].value !== this.maze[row + 1][col].value) {
+            this.fill(row - 1, col, this.maze[row - 1][col].value, this.maze[row + 1][col].value);
             this.maze[row][col].value = this.maze[row + 1][col].value;
-            this.maze[row][col].isWall = this.maze[row][col].isWall;
         }
     }
 
