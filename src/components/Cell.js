@@ -9,9 +9,10 @@ const Cell = ({
     onClick,
     onMouseUp,
     onMouseMove,
-    index,
+    cordinates,
     animate,
     current,
+    width
 }) => {
     const getClassName = () => {
         if (isInitialCell) return 'initialCell';
@@ -25,10 +26,11 @@ const Cell = ({
 
     return (
         <div
+            style={{ width, height: width }}
             className={`Cell ${getClassName()} ${animate ? 'cellStart' : ''}`}
-            onMouseDown={() => onClick(index)}
+            onMouseDown={() => onClick(cordinates)}
             onMouseUp={onMouseUp}
-            onMouseMove={() => onMouseMove(index)}
+            onMouseMove={() => onMouseMove(cordinates)}
         ></div>
     );
 };

@@ -5,10 +5,9 @@ const WALL_EVENT = 'wall';
 const OPEN_EVENT = 'open';
 
 export default class MazeCreator {
-    constructor(maze, getIndex) {
+    constructor(maze) {
         this.maze = maze;
         this.dim = maze.length;
-        this.getIndex = getIndex;
         this.path = new PriorityQueue({
             strategy: PriorityQueue.ArrayStrategy,
         });
@@ -31,8 +30,8 @@ export default class MazeCreator {
 
         let startI = 2;
         let startJ = 2;
-        while (startI % 2 === 0 && startI > 0) startI = parseInt(Math.random() * (this.dim - 1));
-        while (startJ % 2 === 0 && startJ > 0) startJ = parseInt(Math.random() * (this.dim - 1));
+        while (startI % 2 === 0) startI = parseInt(Math.random() * (this.dim - 1));
+        while (startJ % 2 === 0) startJ = parseInt(Math.random() * (this.maze[0].length - 1));
         stack.push({ i: startI, j: startJ });
         this.path.queue({ i: startI, j: startJ, event: OPEN_EVENT });
         this.setVisited(startI, startJ);
@@ -95,10 +94,14 @@ export default class MazeCreator {
             i > 0 &&
             j > 0 &&
             i < this.maze.length - 1 &&
-            j < this.maze.length - 1 &&
+            j < this.maze[i].length - 1 &&
             !this.visitedPath.has(i * this.maze.length + j) &&
             !this.visitedPath.has(midI * this.maze.length + midJ)
         );
+    };
+
+    getIndex(index) {
+        return [parseInt(index / this.maze.length), parseInt(index % this.maze[0].length)];
     };
 
     makeMazeDfs = () => {
@@ -106,21 +109,23 @@ export default class MazeCreator {
         let emptyCt = 0;
         const nodesToExplore = [];
 
-        for (i = 0; i < this.dim; i++)
-            for (j = 0; j < this.dim; j++) {
+        console.log(this.maze.length, this.maze[0].length);
+
+        for (i = 0; i < this.maze.length; i++)
+            for (j = 0; j < this.maze[i].length; j++) {
                 this.maze[i][j].value = WALL;
                 this.maze[i][j].isWall = true;
                 this.addToPath(i, j, WALL_EVENT, true);
             }
 
-        for (i = 1; i < this.dim - 1; i += 2) {
-            for (j = 1; j < this.dim - 1; j += 2) {
+        for (i = 1; i < this.maze.length - 1; i += 2) {
+            for (j = 1; j < this.maze[i].length - 1; j += 2) {
                 emptyCt++;
                 this.maze[i][j].value = -emptyCt;
-                if (i < this.dim - 2) {
+                if (i < this.maze.length - 2) {
                     nodesToExplore.push({ i: i + 1, j });
                 }
-                if (j < this.dim - 2) {
+                if (j < this.maze[i].length - 2) {
                     nodesToExplore.push({ i, j: j + 1 });
                 }
             }
@@ -129,8 +134,8 @@ export default class MazeCreator {
         nodesToExplore.sort(() => Math.random() - 0.5);
         nodesToExplore.forEach(({ i, j }) => this.tearDown(i, j));
 
-        for (i = 1; i < this.dim - 1; i++)
-            for (j = 1; j < this.dim - 1; j++)
+        for (i = 1; i < this.maze.length - 1; i++)
+            for (j = 1; j < this.maze[i].length - 1; j++)
                 if (this.maze[i][j].value < 0) {
                     this.addToPath(i, j, OPEN_EVENT);
                     this.maze[i][j].isWall = false;
@@ -147,7 +152,7 @@ export default class MazeCreator {
         }
     };
 
-    tearDown(row, col, path) {
+    tearDown(row, col) {
         if (row % 2 !== 0 && this.maze[row][col - 1].value !== this.maze[row][col + 1].value) {
             this.fill(row, col - 1, this.maze[row][col - 1].value, this.maze[row][col + 1].value);
             this.maze[row][col].value = this.maze[row][col + 1].value;

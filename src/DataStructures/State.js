@@ -1,7 +1,9 @@
 
 export default class State {
-	constructor(index, weight = 0) {
-		this.indexNode = index;
+	constructor(cordinates, weight = 0) {
+		const [i, j] = cordinates;
+		this.i = i;
+		this.j = j;
 		this.weight = weight;
 	}
 }

@@ -4,38 +4,43 @@ import State from '../DataStructures/State';
 export default class Dijkstra {
     constructor(maze) {
         this.maze = maze;
-        console.log(maze[0]);
     }
 
-    start(start, final) {
+    start(start, [finalI, finalJ]) {
         const path = new PriorityQueue({
             strategy: PriorityQueue.ArrayStrategy,
-        });;
-        const finalState = { path };
-        
+        });
+
         const q = new PriorityQueue({
             comparator: (a, b) => a.weight - b.weight,
             strategy: PriorityQueue.ArrayStrategy,
         });
-        const distances = new Array(this.maze.length * this.maze[0].length).fill(Number.MAX_VALUE);
+        const distances = new Array(
+            this.maze.length * this.maze[0].length,
+        ).fill(Number.MAX_VALUE);
         q.queue(new State(start, 0));
-        distances[start] = 0;
+        distances[start.i * this.maze.length + start.x] = 0;
 
         let found = false;
 
         while (q.length !== 0) {
             let current = q.dequeue();
+            const { i, j } = current;
 
-            if (current.indexNode === final) {
+            if (i === finalI && j === finalJ) {
                 found = true;
                 break;
             }
 
-            const [i, j] = this.getRowAndColIndex(current.indexNode);
-            if (this.maze[i][j].visited || this.maze[i][j].isWall || current.weight > this.maze[i][j].weight) continue;
+            if (
+                this.maze[i][j].visited ||
+                this.maze[i][j].isWall ||
+                current.weight > this.maze[i][j].weight
+            )
+                continue;
 
             this.maze[i][j].visited = true;
-            path.queue({ i, j , event: 'visited' });
+            path.queue({ i, j, event: 'visited' });
 
             for (let row = -1; row <= 1; row++) {
                 for (let col = -1; col <= 1; col++) {
@@ -45,39 +50,47 @@ export default class Dijkstra {
                     let y = i + row;
                     let x = j + col;
 
-                    if (y < 0 || x < 0 || y >= this.maze.length || x >= this.maze[0].length || this.maze[y][x].visited)
+                    if (
+                        y < 0 ||
+                        x < 0 ||
+                        y >= this.maze.length ||
+                        x >= this.maze[0].length ||
+                        this.maze[y][x].visited
+                    )
                         continue;
 
-                    let potentialWeight = current.weight + this.maze[y][x].weight + 1;
-                    if (potentialWeight < distances[this.maze[y][x].index]) {
-                        let indexAdyacentCell = y * this.maze.length + x;
-                        q.queue(new State(indexAdyacentCell, potentialWeight));
+                    let indexAdyacentCell = y * this.maze.length + x;
+                    let potentialWeight =
+                        current.weight + this.maze[y][x].weight + 1;
+                    if (potentialWeight < distances[indexAdyacentCell]) {
+                        q.queue(new State([y, x], potentialWeight));
                         this.maze[y][x].weight = potentialWeight;
                         this.maze[y][x].parent = this.maze[i][j];
-                        distances[this.maze[y][x].index] = potentialWeight;
+                        distances[indexAdyacentCell] = potentialWeight;
                     }
                 }
             }
         }
 
-        finalState.found = found;
-        if (found) this.printPath(final, path);
-        return finalState;
+        if (found) this.printPath([finalI, finalJ], path);
+        return { path, found };
     }
 
     getRowAndColIndex = (index) => {
-        return [parseInt(index / this.maze.length), parseInt(index % this.maze.length)];
+        return [
+            parseInt(index / this.maze.length),
+            parseInt(index % this.maze.length),
+        ];
     };
 
-    printPath =  (final, pathHistory) => {
-        let currentIndex = final;
-
+    printPath = (currentCordinates, pathHistory) => {
         while (true) {
-            const [i, j] = this.getRowAndColIndex(currentIndex);
+            const [i, j] = currentCordinates;
             this.maze[i][j].animate = true;
             this.maze[i][j].isCamino = true;
             if (this.maze[i][j].parent === null) break;
-            currentIndex = this.maze[i][j].parent.index;
+            currentCordinates = this.maze[i][j].parent.cordinates;
+            console.log(i, j, currentCordinates)
             pathHistory.queue({ i, j, event: 'backtrack' });
         }
     };
