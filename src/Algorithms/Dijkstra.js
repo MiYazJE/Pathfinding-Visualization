@@ -1,5 +1,6 @@
 import PriorityQueue from 'js-priority-queue';
 import State from '../DataStructures/State';
+import CELL_TYPES from '../cellTypes';
 
 export default class Dijkstra {
     constructor(maze) {
@@ -34,13 +35,13 @@ export default class Dijkstra {
 
             if (
                 this.maze[i][j].visited ||
-                this.maze[i][j].isWall ||
+                this.maze[i][j].cellType === CELL_TYPES.WALL ||
                 current.weight > this.maze[i][j].weight
             )
                 continue;
 
             this.maze[i][j].visited = true;
-            path.queue({ i, j, event: 'visited' });
+            path.queue({ i, j, event: CELL_TYPES.VISITED });
 
             for (let row = -1; row <= 1; row++) {
                 for (let col = -1; col <= 1; col++) {
@@ -84,7 +85,7 @@ export default class Dijkstra {
             if (this.maze[i][j].parent === null) break;
             currentCordinates = this.maze[i][j].parent.cordinates;
             console.log(i, j, currentCordinates);
-            pathHistory.queue({ i, j, event: 'backtrack' });
+            pathHistory.queue({ i, j, event: CELL_TYPES.BACKTRACK });
         }
     };
 }

@@ -1,33 +1,28 @@
 import React from 'react';
+import CELL_TYPES from '../cellTypes';
 
 const Cell = ({
-    visited,
-    isWall,
-    isBacktrack,
-    isFinalCell,
-    isInitialCell,
+    cellType,
     onClick,
     onMouseUp,
     onMouseMove,
     cordinates,
-    animate,
-    current,
-    width
+    width,
+    initial,
+    final
 }) => {
     const getClassName = () => {
-        if (isInitialCell) return 'initialCell';
-        if (isFinalCell)   return 'finalCell';
-        if (isBacktrack)   return 'backtrack';
-        if (isWall)        return 'wall';
-        if (visited)       return 'visited';
-        if (current)       return 'current';
-        return 'white';
+        if (cellType === CELL_TYPES.BACKTRACK) return 'backtrack';
+        if (cellType === CELL_TYPES.WALL)      return 'wall';
+        if (cellType === CELL_TYPES.VISITED)   return 'visited';
+        if (cellType === CELL_TYPES.OPEN)      return 'white';
     };
 
+    if (final || initial) console.log(cordinates, initial, final)
     return (
         <div
             style={{ width, height: width }}
-            className={`Cell ${getClassName()} ${animate ? 'cellStart' : ''}`}
+            className={`Cell ${getClassName()} ${initial ? 'initialCell' : final ? 'finalCell' : ''}`}
             onMouseDown={() => onClick(cordinates)}
             onMouseUp={onMouseUp}
             onMouseMove={() => onMouseMove(cordinates)}

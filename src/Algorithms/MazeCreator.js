@@ -1,8 +1,5 @@
 import PriorityQueue from 'js-priority-queue';
-
-const WALL = 1;
-const WALL_EVENT = 'wall';
-const OPEN_EVENT = 'open';
+import CELL_TYPES from '../cellTypes';
 
 export default class MazeCreator {
     constructor(maze) {
@@ -24,7 +21,7 @@ export default class MazeCreator {
         for (let i = 0; i < this.maze.length; i++) {
             for (let j = 0; j < this.maze[i].length; j++) {
                 this.maze[i][j].isWall = true;
-                this.path.queue({ i, j, event: WALL_EVENT, fastSleep: true });
+                this.path.queue({ i, j, event: CELL_TYPES.WALL, fastSleep: true });
             }
         }
 
@@ -35,7 +32,7 @@ export default class MazeCreator {
         while (startJ % 2 === 0)
             startJ = parseInt(Math.random() * (this.maze[0].length - 1));
         stack.push({ current: { i: startI, j: startJ }});
-        this.path.queue({ i: startI, j: startJ, event: OPEN_EVENT });
+        this.path.queue({ i: startI, j: startJ, event: CELL_TYPES.OPEN });
         this.setVisited(startI, startJ);
 
         while (stack.length !== 0) {
@@ -45,8 +42,8 @@ export default class MazeCreator {
                 mid,
             } = stack.pop();
 
-            if (mid) this.path.queue({ i: mid.i, j: mid.j, event: OPEN_EVENT });
-            this.path.queue({ i, j, event: OPEN_EVENT });
+            if (mid) this.path.queue({ i: mid.i, j: mid.j, event: CELL_TYPES.OPEN });
+            this.path.queue({ i, j, event: CELL_TYPES.OPEN });
 
             for (let index = 0; index < 4; index++) {
                 const newI = i + directionsI[index];
@@ -101,9 +98,9 @@ export default class MazeCreator {
 
         for (let i = 0; i < this.maze.length; i++)
             for (let j = 0; j < this.maze[i].length; j++) {
-                this.maze[i][j].value = WALL;
+                this.maze[i][j].value = CELL_TYPES.WALL;
                 this.maze[i][j].isWall = true;
-                this.addToPath(i, j, WALL_EVENT, true);
+                this.addToPath(i, j, CELL_TYPES.WALL, true);
             }
 
         for (let i = 1; i < this.maze.length - 1; i += 2) {
@@ -125,7 +122,7 @@ export default class MazeCreator {
         for (let i = 1; i < this.maze.length - 1; i++)
             for (let j = 1; j < this.maze[i].length - 1; j++)
                 if (this.maze[i][j].value < 0) {
-                    this.addToPath(i, j, OPEN_EVENT);
+                    this.addToPath(i, j, CELL_TYPES.OPEN);
                     this.maze[i][j].isWall = false;
                 }
 
@@ -173,7 +170,7 @@ export default class MazeCreator {
         if (this.maze[row][col].value === replace) {
             this.maze[row][col].value = replaceWith;
             this.maze[row][col].isWall = false;
-            this.addToPath(row, col, OPEN_EVENT);
+            this.addToPath(row, col, CELL_TYPES.OPEN);
             this.fill(row + 1, col, replace, replaceWith);
             this.fill(row - 1, col, replace, replaceWith);
             this.fill(row, col + 1, replace, replaceWith);

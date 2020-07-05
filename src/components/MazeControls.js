@@ -3,6 +3,7 @@ import TextTransition from 'react-text-transition';
 import { Button, Menu, Dropdown } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
 import 'antd/dist/antd.css';
+import CELL_TYPES from '../cellTypes';
 
 const MazeControls = ({
     changeControls,
@@ -31,28 +32,28 @@ const MazeControls = ({
         <Menu>
             <Menu.Item
                 className="btnControls"
-                onClick={() => changeControls('initial')}
+                onClick={() => changeControls(CELL_TYPES.INITIAL)}
                 key="1"
             >
                 Set initial
             </Menu.Item>
             <Menu.Item
                 className="btnControls"
-                onClick={() => changeControls('final')}
+                onClick={() => changeControls(CELL_TYPES.FINAL)}
                 key="2"
             >
                 Set final
             </Menu.Item>
             <Menu.Item
                 className="btnControls"
-                onClick={() => changeControls('wall')}
+                onClick={() => changeControls(CELL_TYPES.WALL)}
                 key="3"
             >
                 Set wall
             </Menu.Item>
             <Menu.Item
                 className="btnControls"
-                onClick={() => changeControls('clear')}
+                onClick={() => changeControls(CELL_TYPES.OPEN)}
                 key="4"
             >
                 Set clear
@@ -71,45 +72,11 @@ const MazeControls = ({
                         Maze Controls <DownOutlined />
                     </Button>
                 </Dropdown>
-
-                {/* <Button
-                    className="btnControls"
-                    onClick={() => onClick('initial')}
-                >
-                    Set Initial
-                </Button>
-                <Button
-                    className="btnControls"
-                    onClick={() => onClick('final')}
-                >
-                    Set Final
-                </Button>
-                <Button className="btnControls" onClick={() => onClick('wall')}>
-                    Set Walls
-                </Button>
-                <Button
-                    className="btnControls"
-                    onClick={() => onClick('clear')}
-                >
-                    Clear cell
-                </Button>
-                <Button className="btnControls" onClick={clearGrid}>
-                    Clear grid
-                </Button> */}
                 <Dropdown className="btnControls" overlay={menuMazeGenerator}>
                     <Button>
                         Maze Generator <DownOutlined />
                     </Button>
                 </Dropdown>
-                {/* <button className="btnControls" onClick={createMazeDfs}>
-                    Create maze Random
-                </button>
-                <button
-                    className="btnControls"
-                    onClick={createMazeBacktracking}
-                >
-                    Create maze Backtracking
-                </button> */}
                 <Button className="btnDijkstra" onClick={startDijkstra}>
                     Start Dikjstra
                 </Button>
