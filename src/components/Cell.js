@@ -22,7 +22,7 @@ const Cell = ({
     return (
         <div
             style={{ width, height: width }}
-            className={`Cell ${getClassName()} ${initial ? 'initialCell' : final ? 'finalCell' : ''}`}
+            className={`Cell ${!final && !initial ? getClassName() : null} ${initial ? 'initialCell' : final ? 'finalCell' : ''}`}
             onMouseDown={() => onClick(cordinates)}
             onMouseUp={onMouseUp}
             onMouseMove={() => onMouseMove(cordinates)}
