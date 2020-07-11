@@ -80,11 +80,8 @@ export default class Dijkstra {
     printPath = (currentCordinates, pathHistory) => {
         while (true) {
             const [i, j] = currentCordinates;
-            this.maze[i][j].animate = true;
-            this.maze[i][j].isCamino = true;
             if (this.maze[i][j].parent === null) break;
             currentCordinates = this.maze[i][j].parent.cordinates;
-            console.log(i, j, currentCordinates);
             pathHistory.queue({ i, j, event: CELL_TYPES.BACKTRACK });
         }
     };

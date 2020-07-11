@@ -64,6 +64,7 @@ const App = () => {
                 createMazeBacktracking={() => gridRef.current.createMazeBacktracking()}
                 clearGrid={() => gridRef.current.clearGrid()}
                 startDijkstra={() => gridRef.current.startDijkstra()}
+                startAstart={() => gridRef.current.startAstar()}
                 changeControls={handleControls}
                 message={message}
             />

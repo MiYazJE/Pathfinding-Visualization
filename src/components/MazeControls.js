@@ -12,6 +12,7 @@ const MazeControls = ({
     message,
     createMazeDfs,
     createMazeBacktracking,
+    startAstart
 }) => {
     const menuMazeGenerator = (
         <Menu>
@@ -64,6 +65,21 @@ const MazeControls = ({
         </Menu>
     );
 
+    const menuPathfinding = () => (
+        <Menu>
+            <Menu.Item className="btnDijkstra" onClick={startDijkstra} key="1">
+                Dijkstra
+            </Menu.Item>
+            <Menu.Item
+                className="btnDijkstra"
+                onClick={startAstart}
+                key="2"
+            >
+                A-star
+            </Menu.Item>
+        </Menu>
+    );
+
     return (
         <div className="MazeControls">
             <div className="wrap-buttons">
@@ -77,9 +93,11 @@ const MazeControls = ({
                         Maze Generator <DownOutlined />
                     </Button>
                 </Dropdown>
-                <Button className="btnDijkstra" onClick={startDijkstra}>
-                    Start Dikjstra
-                </Button>
+                <Dropdown className="btnDijkstra" overlay={menuPathfinding}>
+                    <Button className="btnDijkstra">
+                        Start Pathfinding
+                    </Button>
+                </Dropdown>
             </div>
             <TextTransition
                 className="controls-message"

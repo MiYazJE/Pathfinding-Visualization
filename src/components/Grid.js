@@ -4,6 +4,7 @@ import MazeCreator from '../Algorithms/MazeCreator';
 import Dijkstra from '../Algorithms/Dijkstra';
 import { toast } from 'react-toastify';
 import CELL_TYPES from '../cellTypes';
+import Astar from '../Algorithms/Astar';
 
 const CELL_HEIGHT = 20;
 const CELL_WIDTH = 20;
@@ -17,6 +18,9 @@ const INITIAL_CELL_CONF = {
     animate: true,
     final: false,
     initial: false,
+    fCost: 0,
+    gCost: 0,
+    hCost: 0
 };
 
 const sleep = (time) => new Promise((res) => setTimeout(res, time));
@@ -34,7 +38,7 @@ const Grid = forwardRef(({ cellTypeSelected }, ref) => {
         const { height, width } = refWrapGrid.current.getBoundingClientRect();
         rowCells = parseInt((height / CELL_WIDTH) * 0.9);
         if (rowCells % 2 == 0) rowCells--;
-        colCells = parseInt((width / CELL_HEIGHT) * 0.9);
+        colCells = parseInt(width / CELL_HEIGHT);
         if (colCells % 2 == 0) colCells--;
     }, []);
 
@@ -144,7 +148,7 @@ const Grid = forwardRef(({ cellTypeSelected }, ref) => {
     const startDijkstra = async () => {
         if (!indexInitialCell.length || !indexFinalCell.length) {
             toast.error(
-                `Can not start dijkstra without initial and final cells not being established!
+                `Can not start the algorithm without initial and final cells not being established!
                     Please set them and try again.`
             );
             return;
@@ -160,6 +164,25 @@ const Grid = forwardRef(({ cellTypeSelected }, ref) => {
         setIsExecuting(false);
     };
 
+    const startAstar = async () => {
+        if (!indexInitialCell.length || !indexFinalCell.length) {
+            toast.error(
+                `Can not start the algorithm without initial and final cells not being established!
+                    Please set them and try again.`
+            );
+            return;
+        }
+
+        toast.info('Starting Astar...');
+        setIsExecuting(true);
+        
+        const { path, found } = new Astar(mazeMemo).start(indexInitialCell, indexFinalCell);
+        await animatePath(path);
+        if (found) toast.success('🚀 The maze has been resolved!');
+        else toast.error('The maze has not been resolved!');
+        setIsExecuting(false);
+    }
+
     const animatePath = async (path, timeSleep = SLEEP_TIME) => {
         while (path.length !== 0) {
             const { i, j, event, fastSleep } = path.dequeue();
@@ -174,9 +197,9 @@ const Grid = forwardRef(({ cellTypeSelected }, ref) => {
         createMazeDfs,
         createMazeBacktracking,
         startDijkstra,
+        startAstar
     }));
 
-    console.log('render Grid');
     return (
         <div className="wrap-grid" ref={refWrapGrid}>
             <div

@@ -18,7 +18,6 @@ const Cell = ({
         if (cellType === CELL_TYPES.OPEN)      return 'white';
     };
 
-    if (final || initial) console.log(cordinates, initial, final)
     return (
         <div
             style={{ width, height: width }}
