@@ -1,4 +1,10 @@
-import React, { forwardRef, useImperativeHandle, useEffect, useState, useRef } from 'react';
+import React, {
+    forwardRef,
+    useImperativeHandle,
+    useEffect,
+    useState,
+    useRef,
+} from 'react';
 import Cell from './Cell';
 import MazeCreator from '../Algorithms/MazeCreator';
 import Dijkstra from '../Algorithms/Dijkstra';
@@ -18,6 +24,7 @@ const INITIAL_CELL_CONF = {
     animate: true,
     final: false,
     initial: false,
+    visited: false,
     fCost: 0,
     gCost: 0,
     hCost: 0
@@ -49,7 +56,11 @@ const Grid = forwardRef(({ cellTypeSelected }, ref) => {
             initialMaze[i] = [];
             for (let j = 0; j < colCells; j++) {
                 const index = i * colCells + j;
-                initialMaze[i].push({ ...INITIAL_CELL_CONF, cordinates: [i, j], index });
+                initialMaze[i].push({
+                    ...INITIAL_CELL_CONF,
+                    cordinates: [i, j],
+                    index,
+                });
             }
         }
         setMazeMemo([...initialMaze]);
@@ -63,14 +74,41 @@ const Grid = forwardRef(({ cellTypeSelected }, ref) => {
 
         for (let i = 0; i < mazeMemo.length; i++) {
             for (let j = 0; j < mazeMemo[i].length; j++) {
-                mazeMemo[i][j] = { ...mazeMemo[i][j], ...INITIAL_CELL_CONF };
+                if (
+                    mazeMemo[i][j].cellType !== CELL_TYPES.WALL &&
+                    !mazeMemo[i][j].initial &&
+                    !mazeMemo[i][j].final
+                ) {
+                    mazeMemo[i][j] = {
+                        ...mazeMemo[i][j],
+                        ...INITIAL_CELL_CONF,
+                    };
+                }
             }
         }
 
+        setMazeMemo([...mazeMemo]);
+    };
+    
+    const clearAll = () => {
+        if (isExecuting || isCreatingMaze) {
+            toast.error('Can not do this right now.');
+            return;
+        }
+    
+        for (let i = 0; i < mazeMemo.length; i++) {
+            for (let j = 0; j < mazeMemo[i].length; j++) {
+                mazeMemo[i][j] = {
+                    ...mazeMemo[i][j],
+                    ...INITIAL_CELL_CONF,
+                };
+            }
+        }
+        
         setIndexInitialCell([]);
         setIndexFinalCell([]);
         setMazeMemo([...mazeMemo]);
-    };
+    }
 
     const handleClickCell = (cordinates) => {
         if (isExecuting || isCreatingMaze) return;
@@ -94,14 +132,20 @@ const Grid = forwardRef(({ cellTypeSelected }, ref) => {
     const clearActualInitialCell = () => {
         if (indexInitialCell.length) {
             const [row, col] = indexInitialCell;
-            mazeMemo[row][col] = { ...mazeMemo[row][col], ...INITIAL_CELL_CONF };
+            mazeMemo[row][col] = {
+                ...mazeMemo[row][col],
+                ...INITIAL_CELL_CONF,
+            };
         }
     };
 
     const clearActualFinalCell = () => {
         if (indexFinalCell.length) {
             const [row, col] = indexFinalCell;
-            mazeMemo[row][col] = { ...mazeMemo[row][col], ...INITIAL_CELL_CONF };
+            mazeMemo[row][col] = {
+                ...mazeMemo[row][col],
+                ...INITIAL_CELL_CONF,
+            };
         }
     };
 
@@ -121,7 +165,7 @@ const Grid = forwardRef(({ cellTypeSelected }, ref) => {
             return;
         }
         setIsCreatingMaze(true);
-        clearGrid();
+        clearAll();
         const creator = new MazeCreator(mazeMemo);
 
         const path = creator.makeMazeDfs();
@@ -136,7 +180,7 @@ const Grid = forwardRef(({ cellTypeSelected }, ref) => {
             return;
         }
 
-        clearGrid();
+        clearAll();
         setIsCreatingMaze(true);
         const creator = new MazeCreator(mazeMemo);
         const path = creator.makeMazeBacktracking();
@@ -149,7 +193,7 @@ const Grid = forwardRef(({ cellTypeSelected }, ref) => {
         if (!indexInitialCell.length || !indexFinalCell.length) {
             toast.error(
                 `Can not start the algorithm without initial and final cells not being established!
-                    Please set them and try again.`
+                    Please set them and try again.`,
             );
             return;
         }
@@ -157,7 +201,10 @@ const Grid = forwardRef(({ cellTypeSelected }, ref) => {
         toast.info('Starting dikjstra algorithm...');
         setIsExecuting(true);
 
-        const { path, found } = new Dijkstra(mazeMemo).start(indexInitialCell, indexFinalCell);
+        const { path, found } = new Dijkstra(mazeMemo).start(
+            indexInitialCell,
+            indexFinalCell,
+        );
         await animatePath(path, SLEEP_TIME);
         if (found) toast.success('🚀 The maze has been resolved!');
         else toast.error('The maze has not been resolved!');
@@ -168,20 +215,23 @@ const Grid = forwardRef(({ cellTypeSelected }, ref) => {
         if (!indexInitialCell.length || !indexFinalCell.length) {
             toast.error(
                 `Can not start the algorithm without initial and final cells not being established!
-                    Please set them and try again.`
+                    Please set them and try again.`,
             );
             return;
         }
 
         toast.info('Starting Astar...');
         setIsExecuting(true);
-        
-        const { path, found } = new Astar(mazeMemo).start(indexInitialCell, indexFinalCell);
+
+        const { path, found } = new Astar(mazeMemo).start(
+            indexInitialCell,
+            indexFinalCell,
+        );
         await animatePath(path);
         if (found) toast.success('🚀 The maze has been resolved!');
         else toast.error('The maze has not been resolved!');
         setIsExecuting(false);
-    }
+    };
 
     const animatePath = async (path, timeSleep = SLEEP_TIME) => {
         while (path.length !== 0) {
@@ -197,7 +247,8 @@ const Grid = forwardRef(({ cellTypeSelected }, ref) => {
         createMazeDfs,
         createMazeBacktracking,
         startDijkstra,
-        startAstar
+        startAstar,
+        clearAll
     }));
 
     return (
@@ -205,8 +256,12 @@ const Grid = forwardRef(({ cellTypeSelected }, ref) => {
             <div
                 style={{
                     display: 'grid',
-                    gridTemplateRows: `repeat(${parseInt(rowCells)}, ${CELL_WIDTH}px)`,
-                    gridTemplateColumns: `repeat(${parseInt(colCells)}, ${CELL_HEIGHT}px)`,
+                    gridTemplateRows: `repeat(${parseInt(
+                        rowCells,
+                    )}, ${CELL_WIDTH}px)`,
+                    gridTemplateColumns: `repeat(${parseInt(
+                        colCells,
+                    )}, ${CELL_HEIGHT}px)`,
                 }}
                 className="Grid"
             >
@@ -219,7 +274,7 @@ const Grid = forwardRef(({ cellTypeSelected }, ref) => {
                             onMouseMove={handleMouseMove}
                             onMouseUp={handleMouseUp}
                         />
-                    ))
+                    )),
                 )}
             </div>
         </div>

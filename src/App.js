@@ -66,6 +66,7 @@ const App = () => {
                 startDijkstra={() => gridRef.current.startDijkstra()}
                 startAstart={() => gridRef.current.startAstar()}
                 changeControls={handleControls}
+                clearAll={() => gridRef.current.clearAll()}
                 message={message}
             />
             <Grid

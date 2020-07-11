@@ -12,7 +12,8 @@ const MazeControls = ({
     message,
     createMazeDfs,
     createMazeBacktracking,
-    startAstart
+    startAstart,
+    clearAll
 }) => {
     const menuMazeGenerator = (
         <Menu>
@@ -61,6 +62,9 @@ const MazeControls = ({
             </Menu.Item>
             <Menu.Item className="btnControls" onClick={clearGrid} key="5">
                 Clear grid
+            </Menu.Item>
+            <Menu.Item className="btnControls" onClick={clearAll} key="6">
+                Clear all
             </Menu.Item>
         </Menu>
     );
