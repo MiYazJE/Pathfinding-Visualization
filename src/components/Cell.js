@@ -1,16 +1,17 @@
 import React from 'react';
-import CELL_TYPES from '../cellTypes';
+import { CELL_TYPES } from '../config';
 
 const Cell = ({
-    cellType,
     onClick,
     onMouseUp,
     onMouseMove,
-    cordinates,
     width,
+    cellType,
     initial,
-    final
+    final,
+    cordinates
 }) => {
+
     const getClassName = () => {
         if (cellType === CELL_TYPES.BACKTRACK) return 'backtrack';
         if (cellType === CELL_TYPES.WALL)      return 'wall';
@@ -29,4 +30,4 @@ const Cell = ({
     );
 };
 
-export default Cell;
+export default React.memo(Cell);

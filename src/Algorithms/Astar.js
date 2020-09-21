@@ -1,5 +1,5 @@
 import PriorityQueue from 'js-priority-queue';
-import CELL_TYPES from '../cellTypes';
+import { CELL_TYPES } from '../config';
 
 const directions = [
     { i: -1, j: 0 },

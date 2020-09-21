@@ -2,19 +2,26 @@ import React from 'react';
 import TextTransition from 'react-text-transition';
 import { Button, Menu, Dropdown } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
-import 'antd/dist/antd.css';
-import CELL_TYPES from '../cellTypes';
+import { CELL_TYPES } from '../config';
+import useControls from '../hooks/useControls';
 
 const MazeControls = ({
-    changeControls,
     startDijkstra,
     clearGrid,
-    message,
     createMazeDfs,
     createMazeBacktracking,
     startAstart,
-    clearAll
+    clearAll,
+    setCellTypeSelected
 }) => {
+
+    const { message, changeControls } = useControls();
+
+    const handleChangeControls = (cellType) => {
+        setCellTypeSelected(cellType);
+        changeControls(cellType);
+    }
+
     const menuMazeGenerator = (
         <Menu>
             <Menu.Item className="btnControls" onClick={createMazeDfs} key="1">
@@ -34,28 +41,28 @@ const MazeControls = ({
         <Menu>
             <Menu.Item
                 className="btnControls"
-                onClick={() => changeControls(CELL_TYPES.INITIAL)}
+                onClick={() => handleChangeControls(CELL_TYPES.INITIAL)}
                 key="1"
             >
                 Set initial
             </Menu.Item>
             <Menu.Item
                 className="btnControls"
-                onClick={() => changeControls(CELL_TYPES.FINAL)}
+                onClick={() => handleChangeControls(CELL_TYPES.FINAL)}
                 key="2"
             >
                 Set final
             </Menu.Item>
             <Menu.Item
                 className="btnControls"
-                onClick={() => changeControls(CELL_TYPES.WALL)}
+                onClick={() => handleChangeControls(CELL_TYPES.WALL)}
                 key="3"
             >
                 Set wall
             </Menu.Item>
             <Menu.Item
                 className="btnControls"
-                onClick={() => changeControls(CELL_TYPES.OPEN)}
+                onClick={() => handleChangeControls(CELL_TYPES.OPEN)}
                 key="4"
             >
                 Set clear

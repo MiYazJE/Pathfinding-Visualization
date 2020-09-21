@@ -1,5 +1,5 @@
 import PriorityQueue from 'js-priority-queue';
-import CELL_TYPES from '../cellTypes';
+import { CELL_TYPES } from '../config';
 
 export default class MazeCreator {
     constructor(maze) {
@@ -153,7 +153,7 @@ export default class MazeCreator {
             );
             this.maze[row][col].value = this.maze[row][col + 1].value;
         } else if (
-            row % 2 == 0 &&
+            row % 2 === 0 &&
             this.maze[row - 1][col].value !== this.maze[row + 1][col].value
         ) {
             this.fill(

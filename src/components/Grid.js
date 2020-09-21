@@ -1,39 +1,23 @@
 import React, {
-    forwardRef,
-    useImperativeHandle,
     useEffect,
     useState,
-    useRef,
+    useRef
 } from 'react';
-import Cell from './Cell';
 import MazeCreator from '../Algorithms/MazeCreator';
 import Dijkstra from '../Algorithms/Dijkstra';
 import { toast } from 'react-toastify';
-import CELL_TYPES from '../cellTypes';
 import Astar from '../Algorithms/Astar';
+import Maze from './Maze';
+import MazeControls from './MazeControls';
+import { CELL_HEIGHT, CELL_WIDTH, SLEEP_TIME, INITIAL_CELL_CONF, CELL_TYPES } from '../config';
 
-const CELL_HEIGHT = 20;
-const CELL_WIDTH = 20;
-const SLEEP_TIME = 30;
 let rowCells, colCells;
-
-const INITIAL_CELL_CONF = {
-    cellType: CELL_TYPES.OPEN,
-    parent: null,
-    weight: 0,
-    animate: true,
-    final: false,
-    initial: false,
-    visited: false,
-    fCost: 0,
-    gCost: 0,
-    hCost: 0
-};
 
 const sleep = (time) => new Promise((res) => setTimeout(res, time));
 
-const Grid = forwardRef(({ cellTypeSelected }, ref) => {
+const Grid = () => {
     const [mazeMemo, setMazeMemo] = useState([]);
+    const [cellTypeSelected, setCellTypeSelected] = useState(CELL_TYPES.INITIAL);
     const [indexInitialCell, setIndexInitialCell] = useState([]);
     const [indexFinalCell, setIndexFinalCell] = useState([]);
     const [isExecuting, setIsExecuting] = useState(false);
@@ -44,13 +28,12 @@ const Grid = forwardRef(({ cellTypeSelected }, ref) => {
     useEffect(() => {
         const { height, width } = refWrapGrid.current.getBoundingClientRect();
         rowCells = parseInt((height / CELL_WIDTH) * 0.9);
-        if (rowCells % 2 == 0) rowCells--;
+        if (rowCells % 2 === 0) rowCells--;
         colCells = parseInt(width / CELL_HEIGHT);
-        if (colCells % 2 == 0) colCells--;
+        if (colCells % 2 === 0) colCells--;
     }, []);
 
     useEffect(() => {
-        console.log('initial maze');
         const initialMaze = [];
         for (let i = 0; i < rowCells; i++) {
             initialMaze[i] = [];
@@ -86,8 +69,6 @@ const Grid = forwardRef(({ cellTypeSelected }, ref) => {
                 }
             }
         }
-
-        setMazeMemo([...mazeMemo]);
     };
     
     const clearAll = () => {
@@ -107,56 +88,52 @@ const Grid = forwardRef(({ cellTypeSelected }, ref) => {
         
         setIndexInitialCell([]);
         setIndexFinalCell([]);
-        setMazeMemo([...mazeMemo]);
-    }
+    };
 
     const handleClickCell = (cordinates) => {
+        console.log(cordinates, indexInitialCell)
         if (isExecuting || isCreatingMaze) return;
         const [i, j] = cordinates;
         setMouseDown(true);
 
         if (cellTypeSelected === CELL_TYPES.INITIAL) {
-            clearActualInitialCell();
+            if (indexInitialCell.length) {
+                const [row, col] = indexInitialCell;
+                mazeMemo[row][col] = { ...mazeMemo[row][col], ...INITIAL_CELL_CONF };
+            }
             setIndexInitialCell(cordinates);
             mazeMemo[i][j].initial = true;
-        } else if (cellTypeSelected === CELL_TYPES.FINAL) {
-            clearActualFinalCell();
+        } 
+        else if (cellTypeSelected === CELL_TYPES.FINAL) {
+            if (indexFinalCell.length) {
+                const [row, col] = indexFinalCell;
+                mazeMemo[row][col] = {  ...mazeMemo[row][col], ...INITIAL_CELL_CONF };
+            }
             setIndexFinalCell(cordinates);
             mazeMemo[i][j].final = true;
         }
 
-        mazeMemo[i][j] = { ...mazeMemo[i][j], cellType: cellTypeSelected };
+        mazeMemo[i][j].cellType = cellTypeSelected;
         setMazeMemo([...mazeMemo]);
-    };
-
-    const clearActualInitialCell = () => {
-        if (indexInitialCell.length) {
-            const [row, col] = indexInitialCell;
-            mazeMemo[row][col] = {
-                ...mazeMemo[row][col],
-                ...INITIAL_CELL_CONF,
-            };
-        }
-    };
-
-    const clearActualFinalCell = () => {
-        if (indexFinalCell.length) {
-            const [row, col] = indexFinalCell;
-            mazeMemo[row][col] = {
-                ...mazeMemo[row][col],
-                ...INITIAL_CELL_CONF,
-            };
-        }
-    };
+    }
 
     const handleMouseMove = (cordinates) => {
         if (mouseDown) {
             handleClickCell(cordinates);
         }
-    };
+    }
 
     const handleMouseUp = () => {
         setMouseDown(false);
+    }
+
+    const animatePath = async (path, timeSleep = SLEEP_TIME) => {
+        while (path.length !== 0) {
+            const { i, j, event, fastSleep } = path.dequeue();
+            mazeMemo[i][j].cellType = event;
+            setMazeMemo([...mazeMemo])
+            if (!fastSleep) await sleep(timeSleep);
+        }
     };
 
     const createMazeDfs = async () => {
@@ -233,52 +210,41 @@ const Grid = forwardRef(({ cellTypeSelected }, ref) => {
         setIsExecuting(false);
     };
 
-    const animatePath = async (path, timeSleep = SLEEP_TIME) => {
-        while (path.length !== 0) {
-            const { i, j, event, fastSleep } = path.dequeue();
-            mazeMemo[i][j].cellType = event;
-            setMazeMemo([...mazeMemo]);
-            if (!fastSleep) await sleep(timeSleep);
-        }
-    };
-
-    useImperativeHandle(ref, () => ({
-        clearGrid,
-        createMazeDfs,
-        createMazeBacktracking,
-        startDijkstra,
-        startAstar,
-        clearAll
-    }));
-
+    console.log('grid render')
     return (
-        <div className="wrap-grid" ref={refWrapGrid}>
-            <div
-                style={{
-                    display: 'grid',
-                    gridTemplateRows: `repeat(${parseInt(
-                        rowCells,
-                    )}, ${CELL_WIDTH}px)`,
-                    gridTemplateColumns: `repeat(${parseInt(
-                        colCells,
-                    )}, ${CELL_HEIGHT}px)`,
-                }}
-                className="Grid"
-            >
-                {mazeMemo.map((row) =>
-                    row.map((node) => (
-                        <Cell
-                            key={node.index}
-                            {...node}
-                            onClick={handleClickCell}
-                            onMouseMove={handleMouseMove}
-                            onMouseUp={handleMouseUp}
-                        />
-                    )),
-                )}
+        <>
+            <MazeControls
+                createMazeDfs={createMazeDfs}
+                createMazeBacktracking={createMazeBacktracking}
+                clearGrid={clearGrid}
+                startDijkstra={startDijkstra}
+                startAstart={startAstar}
+                clearAll={clearAll}
+                setCellTypeSelected={setCellTypeSelected}
+            />
+            <div className="wrap-grid" ref={refWrapGrid}>
+                <div
+                    style={{
+                        display: 'grid',
+                        gridTemplateRows: `repeat(${parseInt(
+                            rowCells,
+                        )}, ${CELL_WIDTH}px)`,
+                        gridTemplateColumns: `repeat(${parseInt(
+                            colCells,
+                        )}, ${CELL_HEIGHT}px)`,
+                    }}
+                    className="Grid"
+                >
+                    <Maze 
+                        maze={[...mazeMemo]} 
+                        handleClickCell={handleClickCell} 
+                        handleMouseMove={handleMouseMove} 
+                        handleMouseUp={handleMouseUp}
+                    />
+                </div>
             </div>
-        </div>
+        </>
     );
-});
+};
 
-export default React.memo(Grid);
+export default Grid;

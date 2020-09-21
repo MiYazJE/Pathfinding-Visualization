@@ -1,6 +1,6 @@
 import PriorityQueue from 'js-priority-queue';
 import State from '../DataStructures/State';
-import CELL_TYPES from '../cellTypes';
+import { CELL_TYPES } from '../config';
 
 export default class Dijkstra {
     constructor(maze) {
