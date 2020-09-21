@@ -1,3 +1,3 @@
 # Pathfinding Viewer
 
-[Checkout the proyect!](https://maze-pathfinding.herokuapp.com/)
+[Checkout the proyect!](https://pathfinding-visualization.vercel.app/)
