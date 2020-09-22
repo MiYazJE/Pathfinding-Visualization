@@ -69,6 +69,7 @@ const Grid = () => {
                 }
             }
         }
+        setMazeMemo([...mazeMemo]);
     };
     
     const clearAll = () => {
